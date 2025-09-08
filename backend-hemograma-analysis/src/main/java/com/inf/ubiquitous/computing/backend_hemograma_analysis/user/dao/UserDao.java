@@ -12,4 +12,6 @@ import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.model.User;
 public interface UserDao extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
+
+    Optional<User> findByName(String name);
 }
