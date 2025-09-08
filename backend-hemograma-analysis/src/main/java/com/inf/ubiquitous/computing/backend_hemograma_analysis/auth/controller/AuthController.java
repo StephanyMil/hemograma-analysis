@@ -7,7 +7,6 @@ import com.inf.ubiquitous.computing.backend_hemograma_analysis.auth.service.JwtT
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.dao.UserDao;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.dto.UserDto;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.model.User;
-import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,7 @@ public class AuthController {
     private JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserDao userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -84,6 +83,13 @@ public class AuthController {
 
     @PostMapping("/register-first-user")
     public ResponseEntity<?> register(@RequestBody @Valid UserDto userDto) {
+        long userCount = userRepository.count();
+
+        if (userCount > 0) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("System already has users. This endpoint is only for initial setup.");
+        }
+
         Optional<User> existingUser = userRepository.findByEmail(userDto.getEmail());
         if (existingUser.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already in use.");
