@@ -7,6 +7,7 @@ import com.inf.ubiquitous.computing.backend_hemograma_analysis.auth.service.JwtT
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.dao.UserDao;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.dto.UserDto;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.model.User;
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
@@ -35,7 +36,7 @@ public class AuthController {
     private JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    private UserDao userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -43,14 +44,34 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         try {
+            System.out.println("=== TENTATIVA DE LOGIN ===");
+            System.out.println("Email recebido: " + authRequest.getEmail());
+            System.out.println("Password recebido: " + authRequest.getPassword());
+
+            Optional<User> userOpt = userRepository.findByEmail(authRequest.getEmail());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                System.out.println("Usuário encontrado: " + user.getEmail());
+                System.out.println("PasswordHash no banco: " + user.getPassword());
+
+                boolean passwordMatches = passwordEncoder.matches(authRequest.getPassword(), user.getPassword());
+                System.out.println("Password matches: " + passwordMatches);
+            } else {
+                System.out.println("Usuário NÃO encontrado no banco");
+            }
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
             );
+
+            System.out.println("Autenticação bem-sucedida!");
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtTokenUtil.generateToken(authentication);
 
             return ResponseEntity.ok(new AuthResponse(jwt, "Login successful!"));
         } catch (Exception e) {
+            System.out.println("ERRO na autenticação: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
         }
     }
@@ -70,7 +91,7 @@ public class AuthController {
 
         User userModel = new User();
         BeanUtils.copyProperties(userDto, userModel);
-        userModel.setPasswordHash(passwordEncoder.encode(userDto.getPasswordHash()));
+        userModel.setPassword(passwordEncoder.encode(userDto.getPassword()));
         userRepository.save(userModel);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userModel);
