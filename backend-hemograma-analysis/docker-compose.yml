@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  hapi:
+    image: hapiproject/hapi:latest
+    container_name: hapi_fhir
+    ports:
+      - "8090:8080"
+    environment:
+      # Habilita REST-hook
+      HAPI_FHIR_SUBSCRIPTION_RESTHOOK_ENABLED: "true"
+      HAPI_FHIR_SUBSCRIPTION_RESTHOOK_DELIVERY_ENABLED: "true"
+      # Habilita triggering manual (opcional, útil para $trigger-subscription)
+      HAPI_FHIR_SUBSCRIPTION_TRIGGERING_ENABLED: "true"
+      # (opcional) Desabilita websocket
+      HAPI_FHIR_SUBSCRIPTION_WEBSOCKET_ENABLED: "false"
+      # Matching da subscription (o seu servidor já retorna IN_MEMORY)
+      HAPI_FHIR_SUBSCRIPTION_MATCHING_STRATEGY: "IN_MEMORY"
+      # Permite o callback para http://host.docker.internal:8080
+      HAPI_FHIR_ALLOW_EXTERNAL_REFERENCES: "true"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    container_name: hemograma_postgres
+    environment:
+      POSTGRES_DB: hemograma_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
