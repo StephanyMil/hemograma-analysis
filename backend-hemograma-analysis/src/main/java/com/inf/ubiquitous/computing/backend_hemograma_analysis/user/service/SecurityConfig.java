@@ -25,6 +25,7 @@ public class SecurityConfig {
                 .requestMatchers("/fhir/subscription/**").permitAll()
                 .requestMatchers("/fhir/test-hemograma").permitAll()
                 .requestMatchers("/fhir/test").permitAll()
+                .requestMatchers("/api/hemogramas/**").permitAll()
                 // pode manter aberto todo /fhir se preferir
                 // .requestMatchers("/fhir/**").permitAll()
                 .anyRequest().authenticated()

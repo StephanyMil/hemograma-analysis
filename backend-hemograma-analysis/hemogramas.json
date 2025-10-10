@@ -1,0 +1,766 @@
+{
+  "entry" : [ {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 7295.24
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 15.99
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 245272.11
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 42.53
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 4.2
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2024-11-19T07:34:00Z",
+      "id" : "aef4257a-4999-43d4-b030-5ad2732146f2",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:aef4257a-4999-43d4-b030-5ad2732146f2"
+  }, {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 8985.44
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 11.4
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 244214.47
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 43.2
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 4.05
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2024-07-28T05:38:00Z",
+      "id" : "cb25dc97-cd32-4465-a0a8-39bfb54101d1",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:cb25dc97-cd32-4465-a0a8-39bfb54101d1"
+  }, {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 4348.2
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 14.75
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 306435.19
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 36.9
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 4.66
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2024-04-26T06:13:00Z",
+      "id" : "faebda04-889a-4471-975e-efd8917f4c98",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:faebda04-889a-4471-975e-efd8917f4c98"
+  }, {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 10630.73
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 12.1
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 193813.94
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 43.14
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 5.12
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2024-10-17T03:54:00Z",
+      "id" : "5a7adc02-c9bd-49a5-8eb2-2e10cfef0de1",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:5a7adc02-c9bd-49a5-8eb2-2e10cfef0de1"
+  }, {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 9247.35
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 11.04
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 221366.89
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 37.19
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 4.8
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2024-03-27T00:39:00Z",
+      "id" : "c47751ee-cd77-4a35-b3de-7cc5e0799727",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:c47751ee-cd77-4a35-b3de-7cc5e0799727"
+  }, {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 5756.72
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 12.79
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 235496.77
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 43.82
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 4.91
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2024-09-01T03:44:00Z",
+      "id" : "8906f0eb-f77b-4063-a45f-5caaf83f1d32",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:8906f0eb-f77b-4063-a45f-5caaf83f1d32"
+  }, {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 5771.96
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 13.46
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 159941.15
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 37.86
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 4.78
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2024-07-13T06:20:00Z",
+      "id" : "345e8f2d-c0b0-4119-a5b8-e99abe6dc63c",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:345e8f2d-c0b0-4119-a5b8-e99abe6dc63c"
+  }, {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 7418.63
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 13.38
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 239647.11
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 43.26
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 3.91
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2025-09-27T17:40:00Z",
+      "id" : "2b72fd0c-e893-45bf-8f7b-b11f686756c8",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:2b72fd0c-e893-45bf-8f7b-b11f686756c8"
+  }, {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 8088.61
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 14.57
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 163915.31
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 46.06
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 4.03
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2024-05-19T22:39:00Z",
+      "id" : "0df3e3cc-4f28-4d73-896b-f0c5181ae990",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:0df3e3cc-4f28-4d73-896b-f0c5181ae990"
+  }, {
+    "resource" : {
+      "component" : [ {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Leukocytes",
+            "code" : "6690-2"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 8068.63
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hemoglobin",
+            "code" : "718-7"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "g/dL",
+          "value" : 11.72
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Platelets",
+            "code" : "777-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "/µL",
+          "value" : 228772.28
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Hematocrit",
+            "code" : "4544-3"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "%",
+          "value" : 38.41
+        }
+      }, {
+        "code" : {
+          "coding" : [ {
+            "system" : "http://loinc.org",
+            "display" : "Erythrocytes",
+            "code" : "789-8"
+          } ]
+        },
+        "valueQuantity" : {
+          "unit" : "milhões/mm³",
+          "value" : 4.1
+        }
+      } ],
+      "code" : {
+        "coding" : [ {
+          "system" : "http://loinc.org",
+          "display" : "CBC panel - Blood by Automated count",
+          "code" : "58410-2"
+        } ]
+      },
+      "effectiveDateTime" : "2024-01-13T18:08:00Z",
+      "id" : "5b1cd503-9c18-4d6c-980f-28a640d83c38",
+      "resourceType" : "Observation",
+      "status" : "final"
+    },
+    "fullUrl" : "urn:uuid:5b1cd503-9c18-4d6c-980f-28a640d83c38"
+  } ],
+  "id" : "1a914ea4-4674-488c-8c7b-afdb0956ac25",
+  "type" : "collection",
+  "resourceType" : "Bundle"
+}
