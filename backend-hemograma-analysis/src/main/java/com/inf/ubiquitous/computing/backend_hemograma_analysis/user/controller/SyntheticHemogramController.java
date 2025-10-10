@@ -1,7 +1,5 @@
 package com.inf.ubiquitous.computing.backend_hemograma_analysis.user.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +16,7 @@ public class SyntheticHemogramController {
     private SyntheticHemogramGeneratorService hemogramGeneratorService;
 
     @GetMapping("/generate")
-    public List<String> generate(@RequestParam(defaultValue = "5") int qtde) {
+    public String generate(@RequestParam(defaultValue = "5") int qtde) {
         return hemogramGeneratorService.gerarHemogramasSinteticos(qtde);
     }
 }
