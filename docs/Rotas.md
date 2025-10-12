@@ -1,5 +1,150 @@
 Backend Hemograma Analysis — README
-1) O que este projeto faz (estado atual)
+
+### Autenticação
+
+#### API de Autenticação - Documentação
+
+Base URL: `/api/auth`
+
+---
+
+#### 1. Verificar Primeiro Usuário
+
+Verifica se o sistema já possui usuários cadastrados.
+
+**Endpoint:** `GET /api/auth/is-first-user`
+
+**Autenticação:** Não requerida
+
+ Resposta de Sucesso (200 OK)
+
+```json
+{
+  "isFirstUser": true,
+  "userCount": 0
+}
+```
+
+**Campos da resposta:**
+- `isFirstUser` (boolean): `true` se não há usuários no sistema, `false` caso contrário
+- `userCount` (number): Quantidade total de usuários cadastrados
+---
+
+#### 2. Registrar Primeiro Usuário
+
+Registra o primeiro usuário do sistema. Este endpoint **só funciona quando não há usuários cadastrados**.
+
+**Endpoint:** `POST /api/auth/register-first-user`
+
+**Autenticação:** Não requerida
+
+#### Request Body
+
+```json
+{
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+```
+
+**Campos obrigatórios:**
+- `name` (string): Nome completo do usuário
+- `email` (string): Email válido do usuário
+- `password` (string): Senha do usuário
+
+### Respostas
+
+ Sucesso (201 Created)
+
+```json
+{
+  "id": "uuid-do-usuario",
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "password": "$2a$10$hashedPassword..."
+}
+```
+
+ Erro - Sistema já possui usuários (403 Forbidden)
+
+```json
+"System already has users. This endpoint is only for initial setup."
+```
+
+#### Erro - Email já em uso (409 Conflict)
+
+```json
+"Email already in use."
+```
+
+#### Erro - Validação (400 Bad Request)
+
+Retornado quando campos obrigatórios estão ausentes ou inválidos.
+
+---
+
+## 3. Login
+
+Autentica um usuário e retorna um token JWT.
+
+**Endpoint:** `POST /api/auth/login`
+
+**Autenticação:** Não requerida
+
+### Request Body
+
+```json
+{
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+```
+
+**Campos obrigatórios:**
+- `email` (string): Email do usuário
+- `password` (string): Senha do usuário
+
+### Respostas
+
+#### Sucesso (200 OK)
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "message": "Login successful!"
+}
+```
+
+**Campos da resposta:**
+- `token` (string): Token JWT para autenticação nas próximas requisições
+- `message` (string): Mensagem de sucesso
+---
+
+#### 4. Logout
+
+Limpa o contexto de segurança do usuário no servidor.
+
+**Endpoint:** `POST /api/auth/logout`
+
+**Autenticação:** Não requerida (mas recomendado enviar o token)
+
+ Resposta de Sucesso (200 OK)
+
+```json
+"Logout successful!"
+```
+
+---
+
+## Notas Importantes
+
+- **Token JWT:** Após o login bem-sucedido, use o token retornado no header `Authorization: Bearer {token}` para todas as requisições autenticadas
+- **Validade do Token:** Verifique com o backend a validade/expiração do token
+- **Segurança:** Nunca exponha senhas em logs ou console do navegador
+- **HTTPS:** Em produção, sempre use HTTPS para proteger as credenciais durante a transmissão
+
+## 1) O que este projeto faz (estado atual)
 
 Recebe notificações FHIR (REST-hook) vindas do HAPI FHIR e parseia um Bundle com Observations de hemograma (CBC).
 
