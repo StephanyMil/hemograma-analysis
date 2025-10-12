@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.HashMap;
+import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Optional;
 
@@ -40,7 +43,19 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @PostMapping("/login")
+
+    @GetMapping("/is-first-user")
+    public ResponseEntity<?> isFirstUser() {
+        long userCount = userRepository.count();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("isFirstUser", userCount == 0);
+        response.put("userCount", userCount);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("  /login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         try {
             System.out.println("=== TENTATIVA DE LOGIN ===");
