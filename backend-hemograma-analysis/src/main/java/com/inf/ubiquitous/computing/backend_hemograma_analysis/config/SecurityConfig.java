@@ -27,14 +27,32 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**", "/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/fhir/**").permitAll() // Permite acesso aos endpoints FHIR
-                        .requestMatchers("/test/**").permitAll() // Permite acesso aos endpoints de teste
+                        // Endpoints de autenticação - sem autenticação
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // Endpoints FHIR - sem autenticação
+                        .requestMatchers("/fhir/**").permitAll()
+                        .requestMatchers("/fhir/synthetic/**").permitAll()
+                        .requestMatchers("/fhir/subscription/**").permitAll()
+                        .requestMatchers("/fhir/test-hemograma").permitAll()
+                        .requestMatchers("/fhir/test").permitAll()
+
+                        // API de hemogramas - sem autenticação
+                        .requestMatchers("/api/hemogramas/**").permitAll()
+
+                        // Endpoints de teste - sem autenticação
+                        .requestMatchers("/test/**").permitAll()
+
+                        // Documentação (Swagger) - sem autenticação
+                        .requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // Qualquer outra requisição requer autenticação via JWT
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                // Adiciona o filtro JWT antes do filtro padrão de autenticação
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

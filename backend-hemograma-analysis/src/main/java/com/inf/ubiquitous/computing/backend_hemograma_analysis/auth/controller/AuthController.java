@@ -55,7 +55,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("  /login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         try {
             System.out.println("=== TENTATIVA DE LOGIN ===");
