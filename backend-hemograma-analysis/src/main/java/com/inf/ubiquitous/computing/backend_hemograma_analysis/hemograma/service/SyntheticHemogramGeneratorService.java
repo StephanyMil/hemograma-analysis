@@ -1,10 +1,11 @@
-package com.inf.ubiquitous.computing.backend_hemograma_analysis.user.service;
+package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Serviço que gera hemogramas sintéticos (mockados) em formato FHIR Observation
- * para simular pacientes com diferentes condições.
+ * para simular pacientes com diferentes condições, empacotados em um Bundle.
  */
 @Service
 public class SyntheticHemogramGeneratorService {
@@ -20,32 +21,50 @@ public class SyntheticHemogramGeneratorService {
     private static final Random random = new Random();
 
     /**
-     * Gera uma lista de hemogramas sintéticos completos (em JSON FHIR)
-     * 
-     * @param quantidade número de hemogramas a gerar
-     * @return lista de hemogramas em formato JSON (como Strings)
+     * Gera um único recurso FHIR Bundle contendo múltiplos hemogramas sintéticos.
+     * * @param quantidade número de hemogramas a gerar dentro do Bundle.
+     * @return Um Bundle FHIR em formato JSON (como String).
      */
-    public List<String> gerarHemogramasSinteticos(int quantidade) {
-        List<String> hemogramas = new ArrayList<>();
+    public String gerarHemogramasSinteticos(int quantidade) {
+        Map<String, Object> bundle = new HashMap<>();
+        bundle.put("resourceType", "Bundle");
+        bundle.put("id", UUID.randomUUID().toString());
+        bundle.put("type", "collection");
+
+        List<Map<String, Object>> entries = new ArrayList<>();
         for (int i = 0; i < quantidade; i++) {
-            hemogramas.add(gerarHemograma());
+            Map<String, Object> observation = gerarHemograma();
+
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("fullUrl", "urn:uuid:" + observation.get("id"));
+            entry.put("resource", observation);
+            entries.add(entry);
         }
-        return hemogramas;
+
+        bundle.put("entry", entries);
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(bundle);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao gerar JSON do Bundle de hemogramas", e);
+        }
     }
 
     /**
      * Gera um hemograma sintético no formato FHIR Observation
      */
-    private String gerarHemograma() {
+    private Map<String, Object> gerarHemograma() {
         Map<String, Object> observation = new HashMap<>();
         observation.put("resourceType", "Observation");
+        observation.put("id", UUID.randomUUID().toString()); // Adiciona um ID único
         observation.put("status", "final");
 
         Map<String, Object> code = new HashMap<>();
         code.put("coding", List.of(Map.of(
-            "system", "http://loinc.org",
-            "code", "58410-2",
-            "display", "CBC panel - Blood by Automated count"
+                "system", "http://loinc.org",
+                "code", "58410-2",
+                "display", "CBC panel - Blood by Automated count"
         )));
         observation.put("code", code);
 
@@ -60,27 +79,21 @@ public class SyntheticHemogramGeneratorService {
         components.add(criarComponente("789-8", "Erythrocytes", gerarValor(3.8, 5.3), "milhões/mm³"));
 
         observation.put("component", components);
-
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(observation);
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao gerar JSON do hemograma", e);
-        }
+        return observation;
     }
 
     private Map<String, Object> criarComponente(String code, String display, double value, String unit) {
         Map<String, Object> component = new HashMap<>();
         component.put("code", Map.of(
-            "coding", List.of(Map.of(
-                "system", "http://loinc.org",
-                "code", code,
-                "display", display
-            ))
+                "coding", List.of(Map.of(
+                        "system", "http://loinc.org",
+                        "code", code,
+                        "display", display
+                ))
         ));
         component.put("valueQuantity", Map.of(
-            "value", value,
-            "unit", unit
+                "value", value,
+                "unit", unit
         ));
         return component;
     }

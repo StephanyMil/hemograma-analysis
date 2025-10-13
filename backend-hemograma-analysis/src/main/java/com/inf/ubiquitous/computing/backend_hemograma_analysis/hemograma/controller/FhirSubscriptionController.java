@@ -1,4 +1,4 @@
-package com.inf.ubiquitous.computing.backend_hemograma_analysis.user.controller;
+package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.controller;
 
 import java.util.List;
 
@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.service.HemogramaFhirParserService;
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaFhirParserService;
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaStorageService;
 
 @RestController
 @RequestMapping("/fhir") // endpoint final: /fhir/subscription
@@ -25,6 +26,9 @@ public class FhirSubscriptionController {
 
     @Autowired
     private HemogramaFhirParserService hemogramaParser;
+
+    @Autowired
+    private HemogramaStorageService hemogramaStorageService;
 
     /**
      * Endpoint que recebe as notificações de Subscription (REST-hook) do HAPI FHIR.
@@ -63,7 +67,11 @@ public class FhirSubscriptionController {
                 return ResponseEntity.ok("Bundle/Observation processado, mas nenhum hemograma encontrado");
             }
 
-            hemogramas.forEach(h -> logger.info("Hemograma processado: {}", h));
+            hemogramas.forEach(h -> {
+                logger.info("Hemograma processado e salvo no buffer: {}", h);
+                hemogramaStorageService.addHemograma(h);
+            });
+
             logger.info("✅ Processamento concluído com sucesso. {} hemograma(s) processado(s)", hemogramas.size());
             return ResponseEntity.ok("Processados " + hemogramas.size() + " hemogramas com sucesso");
 

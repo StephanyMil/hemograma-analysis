@@ -30,7 +30,7 @@ public class UserController {
     }
 
 
-    public record CreateUserRequest(String name, String email, String passwordHash) {}
+    public record CreateUserRequest(String name, String email, String password) {}
     public record UpdateUserRequest(String name, String email) {}
     public record UserResponse(UUID id, String name, String email) {}
 
@@ -45,7 +45,7 @@ public class UserController {
         User u = new User();
         u.setName(body.name());
         u.setEmail(body.email());
-        u.setPasswordHash(body.passwordHash()); 
+        u.setPassword(body.password());
         User saved = service.create(u);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(saved));
     }

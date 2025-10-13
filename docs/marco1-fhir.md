@@ -16,6 +16,36 @@ O Marco 1 implementa a base fundamental do sistema: a capacidade de receber e pr
   - `GET /fhir/test` - Endpoint de verificação de funcionamento
   - `POST /fhir/test-hemograma` - Endpoint de teste com dados fictícios
 
+  #### 1.1 Autenticação
+O primeiro usuário do sistema pode se auto cadastrar:
+- ``` 
+  POST http://localhost:8080/api/auth/register-first-user
+  
+  body: 
+  {
+    "name": string,
+    "email": string,
+    "password": string
+  } 
+  
+  ```
+- ```
+  POST http://localhost:8080/api/auth/login
+  
+  body: 
+  {
+    "email": string,
+    "password": string
+  } 
+  
+  retorno: 
+  {
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2ZzZWZlZiIsImlhdCI6MTc1NzM0NTg0MSwiZXhwIjoxNzU3MzgxODQxfQ.hs9V_UVldGtyus-UdPMI0tPnPGX8gl1WKaQRmW9LxQ0",
+    "message": "Login successful!"
+  }
+  
+  ```
+
 #### 2. HemogramaFhirParserService
 - **Localização**: `com.inf.ubiquitous.computing.backend_hemograma_analysis.user.service`
 - **Responsabilidade**: Processar e extrair dados de mensagens FHIR
