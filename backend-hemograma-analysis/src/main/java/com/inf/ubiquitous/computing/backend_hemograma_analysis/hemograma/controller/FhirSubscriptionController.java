@@ -1,4 +1,4 @@
-package com.inf.ubiquitous.computing.backend_hemograma_analysis.user.controller;
+package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.controller;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.service.HemogramaFhirParserService;
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaFhirParserService;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaStorageService;
 
 @RestController

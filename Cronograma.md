@@ -58,7 +58,7 @@
 ---
 
 ### **Entrega Final - Notificações e Apresentação**
-**Prazo Final: 05/12**
+**Prazo Final: 14/11**
 
 | Atividades Principais | Responsáveis |
 | :--- | :--- |

@@ -1,4 +1,4 @@
-package com.inf.ubiquitous.computing.backend_hemograma_analysis.user.controller;
+package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.controller;
 
 import java.util.HashMap;
 import java.util.Map;

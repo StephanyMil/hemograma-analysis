@@ -1,6 +1,6 @@
 package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service;
 
-import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.service.HemogramaFhirParserService.HemogramaData;
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaFhirParserService.HemogramaData;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
