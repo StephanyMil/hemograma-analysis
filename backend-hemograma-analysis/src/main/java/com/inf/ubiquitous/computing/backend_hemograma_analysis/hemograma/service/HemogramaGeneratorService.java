@@ -1,4 +1,4 @@
-package com.inf.ubiquitous.computing.backend_hemograma_analysis.user.service;
+package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
