@@ -1,6 +1,6 @@
 package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.controller;
 
-import com.inf.ubiquitous.computing.backend_hemograma_analysis.user.service.HemogramaFhirParserService.HemogramaData;
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaFhirParserService.HemogramaData;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
