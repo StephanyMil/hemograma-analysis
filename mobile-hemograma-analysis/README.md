@@ -1,50 +1,119 @@
-# Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# Projeto de Análise de Hemogramas - Mobile
 
-## Get started
+## Tecnologias Utilizadas
 
-1. Install dependencies
+- **React Native:** Framework para desenvolvimento de aplicativos móveis nativos.
+- **Expo:** Plataforma e conjunto de ferramentas para facilitar o desenvolvimento e build com React Native.
+- **React Navigation:** Biblioteca para gerenciamento de navegação e rotas (Stack e Drawer Navigator).
+- **Axios:** Cliente HTTP para fazer requisições à API do backend.
+- **Expo Secure Store:** Para armazenamento seguro de dados sensíveis, como tokens de autenticação.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## Pré-requisitos
 
-   ```bash
-   npx expo start
-   ```
+Antes de começar, garanta que você tenha o seguinte instalado e configurado em sua máquina:
 
-In the output, you'll find options to open the app in a
+1.  **Node.js (versão LTS recomendada):** [https://nodejs.org/](https://nodejs.org/)
+2.  **NPM ou Yarn:** Gerenciador de pacotes (geralmente instalado com o Node.js).
+3.  **Expo Go App:** O aplicativo cliente no seu celular para rodar o projeto em desenvolvimento.
+    -   [Para Android (Google Play)](https://play.google.com/store/apps/details?id=host.exp.exponent)
+    -   [Para iOS (App Store)](https://apps.apple.com/us/app/expo-go/id982107779)
+4.  **Backend Rodando:** O [backend em Spring Boot](https://github.com/StephanyMil/hemograma-analysis/tree/main/backend-hemograma-analysis) **deve estar em execução** na sua máquina local, pois o aplicativo móvel depende dele para funcionar.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Configuração do Projeto
 
-## Get a fresh project
+Siga os passos abaixo para configurar o ambiente de desenvolvimento local.
 
-When you're ready, run:
+### Passo 1: Clonar o Repositório
 
 ```bash
-npm run reset-project
+git clone https://github.com/StephanyMil/hemograma-analysis.git
+cd mobile-hemograma-analysis
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Passo 2: Instalar as Dependências
 
-## Learn more
+Este comando irá baixar todas as bibliotecas e pacotes necessários para o projeto.
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npm install
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Passo 3: Configurar o Endereço do Backend (Passo Crítico!)
 
-## Join the community
+O aplicativo móvel precisa saber o endereço IP do seu computador na rede local para se comunicar com o backend. **Ele não consegue acessar `localhost`**.
 
-Join our community of developers creating universal apps.
+1.  **Abra o arquivo:** `src/api/apiService.js`
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+2.  **Encontre a linha:**
+    ```javascript
+    const BASE_URL = 'http://192.168.1.10:8080'; // <-- MUDE ESTE VALOR
+    ```
+
+3.  **Descubra o seu endereço IP local:**
+    -   **No Windows:** Abra o terminal (CMD ou PowerShell) e digite `ipconfig`. Procure pelo "Endereço IPv4" na sua conexão de rede (Wi-Fi ou Ethernet).
+    -   **No Mac/Linux:** Abra o terminal e digite `ifconfig` ou `ip a`. Procure pelo endereço "inet" na sua conexão de rede.
+
+4.  **Altere o valor da constante `BASE_URL`** para o seu endereço IP, mantendo a porta `8080`. Por exemplo:
+    ```javascript
+    const BASE_URL = 'http://192.168.0.15:8080';
+    ```
+
+---
+
+## Rodando o Projeto
+
+Com tudo configurado, você pode iniciar o aplicativo.
+
+### Passo 1: Iniciar o Servidor de Desenvolvimento
+
+No terminal, dentro da pasta do projeto, execute o comando:
+
+```bash
+npx expo start
+```
+
+Isso iniciará o Metro Bundler e exibirá um **QR Code** no terminal.
+
+### Passo 2: Abrir o Aplicativo no seu Celular
+
+1.  **Garanta que seu celular e seu computador estejam conectados na mesma rede Wi-Fi.**
+2.  **No Android:** Abra o aplicativo **Expo Go** e escaneie o QR Code exibido no terminal.
+3.  **No iOS:** Abra o aplicativo de **Câmera** e aponte para o QR Code. Um banner aparecerá para abrir o projeto no Expo Go.
+
+O aplicativo será compilado e carregado no seu celular. Qualquer alteração que você fizer no código será refletida em tempo real.
+
+---
+
+## Estrutura de Pastas
+
+O projeto segue a seguinte estrutura de pastas:
+
+```
+.
+├── api/          # Centraliza as chamadas para o backend (apiService.js)
+├── components/   # Componentes reutilizáveis (cards, menus, etc.)
+├── constants/    # Constantes, como a paleta de cores (Colors.js)
+├── context/      # Gerenciamento de estado global (AuthContext.js)
+├── navigation/   # Configuração da navegação do app (AppNavigator.js)
+└── screens/      # As telas principais do aplicativo (Login, Home, etc.)
+├── assets/         # Imagens, fontes e outros arquivos estáticos
+└── App.js          # Ponto de entrada principal do aplicativo
+```
+
+## Solução de Problemas Comuns
+
+-   **Erro de Rede ("Network Error"):**
+    -   Verifique se o endereço IP em `src/api/apiService.js` está correto.
+    -   Confirme que seu celular e computador estão na mesma rede Wi-Fi.
+    -   Verifique se o backend Spring Boot está realmente rodando na porta `8080`.
+
+-   **O aplicativo trava ao iniciar ou se comporta de forma estranha:**
+    -   Pare o servidor (Ctrl+C) e reinicie-o limpando o cache:
+      ```bash
+      npx expo start -c
+      ```
