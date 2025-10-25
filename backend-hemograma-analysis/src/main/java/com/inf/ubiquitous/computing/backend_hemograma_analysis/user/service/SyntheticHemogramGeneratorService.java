@@ -1,10 +1,11 @@
-package com.inf.ubiquitous.computing.backend_hemograma_analysis.user.service;
+package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Serviço que gera hemogramas sintéticos (mockados) em formato FHIR Observation
- * para simular pacientes com diferentes condições.
+ * para simular pacientes com diferentes condições, empacotados em um Bundle.
  */
 @Service
 public class SyntheticHemogramGeneratorService {
@@ -20,67 +21,107 @@ public class SyntheticHemogramGeneratorService {
     private static final Random random = new Random();
 
     /**
-     * Gera uma lista de hemogramas sintéticos completos (em JSON FHIR)
-     * 
-     * @param quantidade número de hemogramas a gerar
-     * @return lista de hemogramas em formato JSON (como Strings)
+     * Gera um único recurso FHIR Bundle contendo múltiplos hemogramas sintéticos.
+     *
+     * @param quantidade número de hemogramas a gerar dentro do Bundle.
+     * @return Um Bundle FHIR em formato JSON (como String).
      */
-    public List<String> gerarHemogramasSinteticos(int quantidade) {
-        List<String> hemogramas = new ArrayList<>();
+    public String gerarHemogramasSinteticos(int quantidade) {
+        Map<String, Object> bundle = new HashMap<>();
+        bundle.put("resourceType", "Bundle");
+        bundle.put("id", UUID.randomUUID().toString());
+        bundle.put("type", "collection");
+
+        List<Map<String, Object>> entries = new ArrayList<>();
         for (int i = 0; i < quantidade; i++) {
-            hemogramas.add(gerarHemograma());
+            Map<String, Object> observation = gerarHemograma();
+
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("fullUrl", "urn:uuid:" + observation.get("id"));
+            entry.put("resource", observation);
+            entries.add(entry);
         }
-        return hemogramas;
+
+        bundle.put("entry", entries);
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(bundle);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao gerar JSON do Bundle de hemogramas", e);
+        }
     }
 
     /**
-     * Gera um hemograma sintético no formato FHIR Observation
+     * Gera um hemograma sintético completo no formato FHIR Observation.
      */
-    private String gerarHemograma() {
+    private Map<String, Object> gerarHemograma() {
         Map<String, Object> observation = new HashMap<>();
         observation.put("resourceType", "Observation");
+        observation.put("id", UUID.randomUUID().toString());
         observation.put("status", "final");
 
         Map<String, Object> code = new HashMap<>();
         code.put("coding", List.of(Map.of(
-            "system", "http://loinc.org",
-            "code", "58410-2",
-            "display", "CBC panel - Blood by Automated count"
+                "system", "http://loinc.org",
+                "code", "58410-2",
+                "display", "CBC panel - Blood by Automated count"
         )));
         observation.put("code", code);
-
         observation.put("effectiveDateTime", gerarDataAleatoria());
 
-        // Componentes do hemograma
+        // Componentes do hemograma (24 campos)
         List<Map<String, Object>> components = new ArrayList<>();
-        components.add(criarComponente("6690-2", "Leukocytes", gerarValor(3500, 11000), "/µL"));
-        components.add(criarComponente("718-7", "Hemoglobin", gerarValor(11.0, 16.0), "g/dL"));
-        components.add(criarComponente("777-3", "Platelets", gerarValor(150000, 400000), "/µL"));
-        components.add(criarComponente("4544-3", "Hematocrit", gerarValor(35.0, 47.0), "%"));
-        components.add(criarComponente("789-8", "Erythrocytes", gerarValor(3.8, 5.3), "milhões/mm³"));
+
+        // Principais
+        components.add(criarComponente("6690-2", "Leukocytes", gerarValor(4000, 11000), "/µL"));
+        components.add(criarComponente("789-8", "Erythrocytes", gerarValor(4.2, 5.9), "milhões/mm³"));
+        components.add(criarComponente("718-7", "Hemoglobin", gerarValor(12.0, 17.0), "g/dL"));
+        components.add(criarComponente("4544-3", "Hematocrit", gerarValor(37.0, 50.0), "%"));
+        components.add(criarComponente("777-3", "Platelets", gerarValor(150000, 450000), "/µL"));
+
+        // Índices hematimétricos
+        components.add(criarComponente("787-2", "Mean Corpuscular Volume (MCV)", gerarValor(80.0, 100.0), "fL"));
+        components.add(criarComponente("785-6", "Mean Corpuscular Hemoglobin (MCH)", gerarValor(27.0, 33.0), "pg"));
+        components.add(criarComponente("786-4", "Mean Corpuscular Hemoglobin Concentration (MCHC)", gerarValor(32.0, 36.0), "g/dL"));
+        components.add(criarComponente("788-0", "Red Cell Distribution Width (RDW-CV)", gerarValor(11.5, 14.5), "%"));
+        components.add(criarComponente("21000-5", "Red Cell Distribution Width (RDW-SD)", gerarValor(35.0, 50.0), "fL"));
+
+        // Diferencial leucocitário (%)
+        components.add(criarComponente("770-8", "Neutrophils", gerarValor(40.0, 75.0), "%"));
+        components.add(criarComponente("736-9", "Lymphocytes", gerarValor(20.0, 45.0), "%"));
+        components.add(criarComponente("5905-5", "Monocytes", gerarValor(2.0, 10.0), "%"));
+        components.add(criarComponente("713-8", "Eosinophils", gerarValor(1.0, 6.0), "%"));
+        components.add(criarComponente("706-2", "Basophils", gerarValor(0.0, 2.0), "%"));
+
+        // Contagem absoluta de leucócitos (células/µL)
+        components.add(criarComponente("751-8", "Neutrophils (absolute)", gerarValor(1800, 7800), "/µL"));
+        components.add(criarComponente("731-0", "Lymphocytes (absolute)", gerarValor(1000, 4800), "/µL"));
+        components.add(criarComponente("742-7", "Monocytes (absolute)", gerarValor(200, 800), "/µL"));
+        components.add(criarComponente("711-2", "Eosinophils (absolute)", gerarValor(50, 400), "/µL"));
+        components.add(criarComponente("704-7", "Basophils (absolute)", gerarValor(0, 100), "/µL"));
+
+        // Plaquetas – volume e índices
+        components.add(criarComponente("32623-1", "Mean Platelet Volume (MPV)", gerarValor(7.5, 11.5), "fL"));
+        components.add(criarComponente("49498-9", "Platelet Distribution Width (PDW)", gerarValor(9.0, 17.0), "fL"));
+        components.add(criarComponente("777-3", "Platelet Count", gerarValor(150000, 450000), "/µL"));
 
         observation.put("component", components);
-
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(observation);
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao gerar JSON do hemograma", e);
-        }
+        return observation;
     }
 
     private Map<String, Object> criarComponente(String code, String display, double value, String unit) {
         Map<String, Object> component = new HashMap<>();
         component.put("code", Map.of(
-            "coding", List.of(Map.of(
-                "system", "http://loinc.org",
-                "code", code,
-                "display", display
-            ))
+                "coding", List.of(Map.of(
+                        "system", "http://loinc.org",
+                        "code", code,
+                        "display", display
+                ))
         ));
         component.put("valueQuantity", Map.of(
-            "value", value,
-            "unit", unit
+                "value", value,
+                "unit", unit
         ));
         return component;
     }

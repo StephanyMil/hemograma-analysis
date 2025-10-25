@@ -1,4 +1,34 @@
-package com.inf.ubiquitous.computing.backend_hemograma_analysis.user.controller;
+/*
+TODO: Remover este controller quando Docker estiver gerando dados automaticamente
+Este controller era para testes/desenvolvimento apenas
+
+@RestController
+@RequestMapping("/hemograma")
+public class HemogramaGeneratorController {
+    // ... todo o código atual
+}
+*//*
+TODO: Remover este controller quando Docker estiver gerando dados automaticamente
+Este controller era para testes/desenvolvimento apenas
+
+@RestController
+@RequestMapping("/hemograma")
+public class HemogramaGeneratorController {
+    // ... todo o código atual
+}
+*//*
+TODO: Remover este controller quando Docker estiver gerando dados automaticamente
+Este controller era para testes/desenvolvimento apenas
+
+@RestController
+@RequestMapping("/hemograma")
+public class HemogramaGeneratorController {
+    // ... todo o código atual
+}
+*/
+
+/*package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.controller;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,3 +68,4 @@ public class HemogramaGeneratorController {
         return random.nextInt(max - min + 1) + min;
     }
 }
+*/
