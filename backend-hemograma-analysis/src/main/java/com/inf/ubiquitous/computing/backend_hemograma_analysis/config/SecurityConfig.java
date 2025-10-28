@@ -39,9 +39,16 @@ public class SecurityConfig {
 
                         // API de hemogramas - sem autenticação
                         .requestMatchers("/api/hemogramas/**").permitAll()
+                        .requestMatchers("/api/hemogram/**").permitAll() // NOVO: para o gerador
 
                         // Endpoints de teste - sem autenticação
                         .requestMatchers("/test/**").permitAll()
+
+                        // NOVO: Endpoints de ferramentas (tools) - sem autenticação
+                        .requestMatchers("/tools/**").permitAll()
+
+                        // NOVO: Actuator (health check) - sem autenticação
+                        .requestMatchers("/actuator/**").permitAll()
 
                         // Documentação (Swagger) - sem autenticação
                         .requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
