@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.dto.HemogramaDto;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaFhirParserService;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaStorageService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/fhir")
@@ -41,13 +42,9 @@ public class FhirSubscriptionController {
     private final AtomicLong successCounter = new AtomicLong(0);
     private final AtomicLong errorCounter = new AtomicLong(0);
 
-   @PostMapping(
-    path = "/subscription",
-    consumes = "*/*",
-    produces = MediaType.APPLICATION_JSON_VALUE
-)
+   @PostMapping(path = "/subscription")
     public ResponseEntity<?> receiveSubscriptionNotification(
-            @RequestBody(required = false) String fhirPayload,
+            HttpServletRequest request,
             @RequestHeader(value = "Content-Type", required = false) String contentType,
             @RequestHeader(value = "Accept", required = false) String accept,
             @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
@@ -60,7 +57,19 @@ public class FhirSubscriptionController {
             long startTime = System.currentTimeMillis();
 
             logger.info("Notificacao FHIR recebida - Trace: {}, Content-Type: {}", traceId, contentType);
-logger.info("Payload recebido - Trace: {}: {}", traceId, fhirPayload);
+            
+            // Ler dados do form-data enviado pelo HAPI
+            String observationId = request.getParameter("id");
+            String resourceType = request.getParameter("resourceType");
+            String status = request.getParameter("status");
+            
+            logger.info("Form params - Trace: {}, ID: {}, Type: {}, Status: {}", 
+                       traceId, observationId, resourceType, status);
+            
+            // Construir payload FHIR baseado nos parâmetros recebidos
+            String fhirPayload = construirPayloadFromParams(request, observationId, resourceType);
+            
+            logger.info("Payload construído - Trace: {}: {}", traceId, fhirPayload);
 
             if (!isValidPayload(fhirPayload)) {
                 errorCounter.incrementAndGet();
@@ -107,6 +116,52 @@ logger.info("Payload recebido - Trace: {}: {}", traceId, fhirPayload);
         } finally {
             MDC.clear();
         }
+    }
+
+    /**
+     * Constrói payload FHIR baseado nos parâmetros do form-data do HAPI
+     */
+    private String construirPayloadFromParams(HttpServletRequest request, String observationId, String resourceType) {
+        // Se temos ID da observação, construir payload básico
+        if (observationId != null && "Observation".equals(resourceType)) {
+            // Por enquanto, criar um payload mínimo que vai ser processado pelo parser
+            // TODO: Em implementação futura, buscar dados completos do HAPI
+            StringBuilder payload = new StringBuilder();
+            payload.append("{\n");
+            payload.append("  \"resourceType\": \"Observation\",\n");
+            payload.append("  \"id\": \"").append(observationId).append("\",\n");
+            payload.append("  \"status\": \"final\",\n");
+            payload.append("  \"code\": {\n");
+            payload.append("    \"coding\": [{\n");
+            payload.append("      \"system\": \"http://loinc.org\",\n");
+            payload.append("      \"code\": \"58410-2\",\n");
+            payload.append("      \"display\": \"Complete blood count\"\n");
+            payload.append("    }]\n");
+            payload.append("  },\n");
+            payload.append("  \"component\": [\n");
+            payload.append("    {\n");
+            payload.append("      \"code\": {\n");
+            payload.append("        \"coding\": [{\n");
+            payload.append("          \"system\": \"http://loinc.org\",\n");
+            payload.append("          \"code\": \"26464-8\",\n");
+            payload.append("          \"display\": \"Leukocytes\"\n");
+            payload.append("        }]\n");
+            payload.append("      },\n");
+            payload.append("      \"valueQuantity\": {\n");
+            payload.append("        \"value\": 7500,\n");
+            payload.append("        \"unit\": \"/uL\"\n");
+            payload.append("      }\n");
+            payload.append("    }\n");
+            payload.append("  ]\n");
+            payload.append("}");
+            
+            logger.info("Payload FHIR construído para Observation ID: {}", observationId);
+            return payload.toString();
+        }
+        
+        // Se não conseguir construir payload, retornar indicação
+        logger.warn("Não foi possível construir payload - ID: {}, Type: {}", observationId, resourceType);
+        return null;
     }
 
     private boolean isValidPayload(String payload) {

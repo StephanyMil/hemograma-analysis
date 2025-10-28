@@ -1,3 +1,4 @@
+package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.controller;
 /*
 TODO: Remover este controller quando Docker estiver gerando dados automaticamente
 Este controller era para testes/desenvolvimento apenas
