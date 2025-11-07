@@ -137,6 +137,47 @@ Limpa o contexto de segurança do usuário no servidor.
 
 ---
 
+## 5. Listar Hemogramas Recentes para o Frontend
+
+Retorna lista dos hemogramas recentes recebidos via subscription.  
+
+**Endpoint:** `GET /api/hemogramas/recentes`  
+
+**Autenticação:** Não requerida    
+
+### Respostas  
+
+#### Sucesso (200 OK)  
+
+```json
+[  
+  {  
+    "id": "aef4257a-4999-43d4-b030-5ad2732146f2",  
+    "data": "2024-11-19T07:34:00Z",  
+    "leucocitos": 7295.24,  
+    "hemoglobina": 15.99,  
+    "plaquetas": 245272.11,  
+    "hematocrito": 42.53  
+  },  
+  {  
+    "id": "cb25dc97-cd32-4465-a0a8-39bfb54101d1",  
+    "data": "2024-07-28T05:38:00Z",  
+    "leucocitos": 8985.44,  
+    "hemoglobina": 11.4,  
+    "plaquetas": 244214.47,  
+    "hematocrito": 43.2  
+  }  
+]  
+```  
+
+#### Não Encontrado (404 Not Found)  
+
+```json  
+{  
+  "error": "Hemograma não encontrado"  
+}  
+```
+
 ## Notas Importantes
 
 - **Token JWT:** Após o login bem-sucedido, use o token retornado no header `Authorization: Bearer {token}` para todas as requisições autenticadas
