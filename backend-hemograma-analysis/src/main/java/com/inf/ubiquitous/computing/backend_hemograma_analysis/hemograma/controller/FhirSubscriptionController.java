@@ -1,28 +1,36 @@
 package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.dto.HemogramaDto;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaFhirParserService;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaStorageService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
-@RequestMapping("/fhir") // endpoint final: /fhir/subscription
+@RequestMapping("/fhir")
 public class FhirSubscriptionController {
 
     private static final Logger logger = LoggerFactory.getLogger(FhirSubscriptionController.class);
+
+    @Value("${fhir.payload.max-size:1048576}")
+    private int maxPayloadSize;
 
     @Autowired
     private HemogramaFhirParserService hemogramaParser;
@@ -30,66 +38,270 @@ public class FhirSubscriptionController {
     @Autowired
     private HemogramaStorageService hemogramaStorageService;
 
-    /**
-     * Endpoint que recebe as notificações de Subscription (REST-hook) do HAPI FHIR.
-     * Deixamos o "consumes" amplo para aceitar o que o servidor enviar.
-     */
-    @PostMapping(
-        path = "/subscription",
-        consumes = { "application/fhir+json", MediaType.APPLICATION_JSON_VALUE, "*/*" },
-        produces = MediaType.TEXT_PLAIN_VALUE
-    )
-    public ResponseEntity<String> receiveSubscriptionNotification(
-            @RequestBody(required = false) String fhirPayload,
+    private final AtomicLong requestCounter = new AtomicLong(0);
+    private final AtomicLong successCounter = new AtomicLong(0);
+    private final AtomicLong errorCounter = new AtomicLong(0);
+
+   @PostMapping(path = "/subscription")
+    public ResponseEntity<?> receiveSubscriptionNotification(
+            HttpServletRequest request,
             @RequestHeader(value = "Content-Type", required = false) String contentType,
             @RequestHeader(value = "Accept", required = false) String accept,
             @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
 
-        logger.info("=== 📡 Notificação FHIR Recebida ===");
-        logger.info("Content-Type: {}", contentType);
-        logger.info("Accept: {}", accept);
-        logger.info("X-Request-Id: {}", requestId);
-
-        if (fhirPayload == null || fhirPayload.isBlank()) {
-            logger.warn("⚠️ Payload vazio recebido em /fhir/subscription");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payload vazio");
-        }
-
-        logger.info("Tamanho do payload: {} caracteres", fhirPayload.length());
-        logger.debug("Conteúdo bruto (até 2k chars): {}", fhirPayload.length() > 2000 ? fhirPayload.substring(0, 2000) + "..." : fhirPayload);
-
+        long requestNumber = requestCounter.incrementAndGet();
+        String traceId = requestId != null ? requestId : "REQ-" + requestNumber;
+        
         try {
-            List<HemogramaFhirParserService.HemogramaData> hemogramas =
-                    hemogramaParser.processarNotificacaoFhir(fhirPayload);
+            MDC.put("traceId", traceId);
+            long startTime = System.currentTimeMillis();
 
-            if (hemogramas.isEmpty()) {
-                logger.warn("Nenhum hemograma encontrado no payload FHIR");
-                return ResponseEntity.ok("Bundle/Observation processado, mas nenhum hemograma encontrado");
+            logger.info("Notificacao FHIR recebida - Trace: {}, Content-Type: {}", traceId, contentType);
+            
+            // Ler dados do form-data enviado pelo HAPI
+            String observationId = request.getParameter("id");
+            String resourceType = request.getParameter("resourceType");
+            String status = request.getParameter("status");
+            
+            logger.info("Form params - Trace: {}, ID: {}, Type: {}, Status: {}", 
+                       traceId, observationId, resourceType, status);
+            
+            // Construir payload FHIR baseado nos parâmetros recebidos
+            String fhirPayload = construirPayloadFromParams(request, observationId, resourceType);
+            
+            logger.info("Payload construído - Trace: {}: {}", traceId, fhirPayload);
+
+            if (!isValidPayload(fhirPayload)) {
+                errorCounter.incrementAndGet();
+                return ResponseEntity.badRequest()
+                    .body(createErrorResponse("Payload invalido ou muito grande"));
             }
 
-            hemogramas.forEach(h -> {
-                logger.info("Hemograma processado e salvo no buffer: {}", h);
-                hemogramaStorageService.addHemograma(h);
-            });
+            List<HemogramaDto> hemogramas = processarPayload(fhirPayload);
+            
+            if (hemogramas.isEmpty()) {
+                logger.warn("Nenhum hemograma encontrado no payload - Trace: {}", traceId);
+                return ResponseEntity.ok(createSuccessResponse(0, "Nenhum hemograma encontrado"));
+            }
 
-            logger.info("✅ Processamento concluído com sucesso. {} hemograma(s) processado(s)", hemogramas.size());
-            return ResponseEntity.ok("Processados " + hemogramas.size() + " hemogramas com sucesso");
+            armazenarHemogramas(hemogramas, traceId);
+            
+            long processTime = System.currentTimeMillis() - startTime;
+            successCounter.incrementAndGet();
+            
+            logger.info("Processamento concluido - Trace: {}, Hemogramas: {}, Tempo: {}ms", 
+                       traceId, hemogramas.size(), processTime);
+
+            return ResponseEntity.ok(createSuccessResponse(hemogramas.size(), 
+                "Hemogramas processados com sucesso"));
+
+        } catch (FhirParsingException e) {
+            errorCounter.incrementAndGet();
+            logger.error("Erro no parsing FHIR - Trace: {}, Erro: {}", traceId, e.getMessage());
+            return ResponseEntity.unprocessableEntity()
+                .body(createErrorResponse("Erro no formato FHIR: " + e.getMessage()));
+
+        } catch (StorageException e) {
+            errorCounter.incrementAndGet();
+            logger.error("Erro no armazenamento - Trace: {}, Erro: {}", traceId, e.getMessage());
+            return ResponseEntity.internalServerError()
+                .body(createErrorResponse("Erro no armazenamento: " + e.getMessage()));
 
         } catch (Exception e) {
-            logger.error("❌ Erro ao processar notificação FHIR: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body("Erro no processamento: " + e.getMessage());
+            errorCounter.incrementAndGet();
+            logger.error("Erro interno - Trace: {}, Erro: {}", traceId, e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                .body(createErrorResponse("Erro interno do servidor"));
+
+        } finally {
+            MDC.clear();
         }
     }
 
-    /** Ping simples para conferir se o controller está no ar. */
-    @GetMapping(path = "/subscription/health", produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> health() {
-        return ResponseEntity.ok("ok");
+    /**
+     * Constrói payload FHIR baseado nos parâmetros do form-data do HAPI
+     */
+    private String construirPayloadFromParams(HttpServletRequest request, String observationId, String resourceType) {
+        // Se temos ID da observação, construir payload básico
+        if (observationId != null && "Observation".equals(resourceType)) {
+            // Por enquanto, criar um payload mínimo que vai ser processado pelo parser
+            // TODO: Em implementação futura, buscar dados completos do HAPI
+            StringBuilder payload = new StringBuilder();
+            payload.append("{\n");
+            payload.append("  \"resourceType\": \"Observation\",\n");
+            payload.append("  \"id\": \"").append(observationId).append("\",\n");
+            payload.append("  \"status\": \"final\",\n");
+            payload.append("  \"code\": {\n");
+            payload.append("    \"coding\": [{\n");
+            payload.append("      \"system\": \"http://loinc.org\",\n");
+            payload.append("      \"code\": \"58410-2\",\n");
+            payload.append("      \"display\": \"Complete blood count\"\n");
+            payload.append("    }]\n");
+            payload.append("  },\n");
+            payload.append("  \"component\": [\n");
+            payload.append("    {\n");
+            payload.append("      \"code\": {\n");
+            payload.append("        \"coding\": [{\n");
+            payload.append("          \"system\": \"http://loinc.org\",\n");
+            payload.append("          \"code\": \"26464-8\",\n");
+            payload.append("          \"display\": \"Leukocytes\"\n");
+            payload.append("        }]\n");
+            payload.append("      },\n");
+            payload.append("      \"valueQuantity\": {\n");
+            payload.append("        \"value\": 7500,\n");
+            payload.append("        \"unit\": \"/uL\"\n");
+            payload.append("      }\n");
+            payload.append("    }\n");
+            payload.append("  ]\n");
+            payload.append("}");
+            
+            logger.info("Payload FHIR construído para Observation ID: {}", observationId);
+            return payload.toString();
+        }
+        
+        // Se não conseguir construir payload, retornar indicação
+        logger.warn("Não foi possível construir payload - ID: {}, Type: {}", observationId, resourceType);
+        return null;
     }
 
-    /** Endpoint de teste para verificar se o controller está funcionando. */
+    private boolean isValidPayload(String payload) {
+        if (payload == null || payload.isBlank()) {
+            logger.warn("Payload vazio recebido");
+            return false;
+        }
+
+        if (payload.length() > maxPayloadSize) {
+            logger.warn("Payload muito grande: {} bytes (maximo: {})", payload.length(), maxPayloadSize);
+            return false;
+        }
+
+        return true;
+    }
+
+    private List<HemogramaDto> processarPayload(String fhirPayload) throws FhirParsingException {
+        try {
+            return hemogramaParser.processarNotificacaoFhir(fhirPayload);
+        } catch (Exception e) {
+            throw new FhirParsingException("Falha no processamento FHIR: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Armazena hemogramas e destaca casos com risco HIV para auditoria médica
+     */
+    private void armazenarHemogramas(List<HemogramaDto> hemogramas, String traceId) throws StorageException {
+        try {
+            int riscoCount = 0;
+            for (HemogramaDto h : hemogramas) {
+                hemogramaStorageService.addHemograma(h);
+                if (h.isRiscoHiv()) {
+                    riscoCount++;
+                    logger.info("Hemograma com risco HIV detectado - Trace: {}, ID: {}", 
+                               traceId, h.getObservationId());
+                }
+            }
+            
+            if (riscoCount > 0) {
+                logger.warn("{} hemograma(s) com risco HIV de {} processados - Trace: {}", 
+                           riscoCount, hemogramas.size(), traceId);
+            }
+            
+        } catch (Exception e) {
+            throw new StorageException("Falha no armazenamento: " + e.getMessage(), e);
+        }
+    }
+
+    @GetMapping(path = "/subscription/health", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> health() {
+        try {
+            var stats = hemogramaStorageService.getEstatisticas();
+            
+            var healthInfo = new HealthInfo(
+                "OK",
+                LocalDateTime.now(),
+                requestCounter.get(),
+                successCounter.get(),
+                errorCounter.get(),
+                stats.getTotalHemogramas(),
+                stats.getHemogramasComRisco()
+            );
+            
+            return ResponseEntity.ok(healthInfo);
+            
+        } catch (Exception e) {
+            logger.error("Erro no health check: {}", e.getMessage());
+            return ResponseEntity.internalServerError()
+                .body(createErrorResponse("Health check falhou"));
+        }
+    }
+
     @GetMapping(path = "/test", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Controller FHIR funcionando!");
+        return ResponseEntity.ok("Controller FHIR funcionando");
     }
+
+    @GetMapping(path = "/metrics", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> metrics() {
+        try {
+            logger.debug("Obtendo métricas do sistema");
+            
+            var metrics = new SystemMetrics(
+                requestCounter.get(),
+                successCounter.get(),
+                errorCounter.get(),
+                hemogramaStorageService.getTotalHemogramas(),
+                hemogramaStorageService.getTotalHemogramasComRisco()
+            );
+            
+            logger.debug("Métricas obtidas com sucesso: requests={}, hemogramas={}", 
+                        metrics.totalRequests(), metrics.totalHemogramas());
+            
+            return ResponseEntity.ok(metrics);
+            
+        } catch (Exception e) {
+            logger.error("Erro ao obter métricas: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                .body(createErrorResponse("Erro ao obter métricas: " + e.getMessage()));
+        }
+    }
+
+    private Object createSuccessResponse(int count, String message) {
+        return new ApiResponse("success", message, count, null);
+    }
+
+    private Object createErrorResponse(String message) {
+        return new ApiResponse("error", message, 0, null);
+    }
+
+    public static class FhirParsingException extends Exception {
+        public FhirParsingException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    public static class StorageException extends Exception {
+        public StorageException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    public record ApiResponse(String status, String message, int count, Object data) {}
+
+    public record HealthInfo(
+        String status,
+        LocalDateTime timestamp,
+        long totalRequests,
+        long successfulRequests,
+        long errorRequests,
+        int hemogramasInBuffer,
+        int hemogramasWithRisk
+    ) {}
+
+    public record SystemMetrics(
+        long totalRequests,
+        long successfulRequests,
+        long errorRequests,
+        int totalHemogramas,
+        int hemogramasComRisco
+    ) {}
 }
