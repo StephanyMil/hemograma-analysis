@@ -137,7 +137,7 @@ Limpa o contexto de segurança do usuário no servidor.
 
 ---
 
-## 5. Listar Hemogramas Recentes para o Frontend
+## 5. Consulta de Hemogramas
 
 Retorna lista dos hemogramas recentes recebidos via subscription.  
 
@@ -173,6 +173,34 @@ Retorna lista dos hemogramas recentes recebidos via subscription.
 #### Não Encontrado (404 Not Found)  
 
 ```json  
+{  
+  "error": "Hemograma não encontrado"  
+}  
+```
+
+## 6. Consultar Detalhe do Hemograma (para o Frontend)
+
+Retorna o detalhe de um hemograma específico pelo seu ID.  
+
+**Endpoint:** `GET /api/hemogramas/{id}`  
+
+**Autenticação:** Não requerida    
+
+#### Sucesso (200 OK)   
+
+```json
+{  
+  "id": "aef4257a-4999-43d4-b030-5ad2732146f2",  
+  "data": "2024-11-19T07:34:00Z",  
+  "leucocitos": 7295.24,  
+  "hemoglobina": 15.99,  
+  "plaquetas": 245272.11,  
+  "hematocrito": 42.53  
+}  
+```
+
+#### Não Encontrado (404 Not Found)  
+```
 {  
   "error": "Hemograma não encontrado"  
 }  
