@@ -73,6 +73,24 @@ curl http://localhost:8080/fhir/test
 curl -X POST http://localhost:8080/fhir/test-hemograma
 ```
 
+### Fluxo de execução para gerar hemogramas
+
+```bash 
+# Para gerar hemogramas e guardar no buffer
+POST http://localhost:8080/fhir/synthetic/generate-and-store
+
+# Leitura dos dados do Hapi
+POST http://localhost:8080/fhir/subscription
+
+  -H "Content-Type: application/x-www-form-urlencoded" 
+  -H "X-Request-Id: TEST-RISCO-001" 
+  -d "id=obs-risco-001&resourceType=Observation&status=final"
+
+# visualizar hemogramas gerados
+GET http://localhost:8080/api/hemogramas/recentes
+
+```
+
 ## Documentação
 
 - [Marco 1 - Recepção FHIR](backend-hemograma-analysis/docs/marco1-fhir.md)
