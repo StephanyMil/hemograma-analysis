@@ -1,13 +1,12 @@
-import React from 'react';
+import { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { MaterialIcons } from '@expo/vector-icons';
+import { AuthContext } from '../context/AuthContext';
 import Colors from '../constants/Colors';
 
 export default function CustomDrawerContent(props) {
-  const handleLogout = () => {
-    props.navigation.navigate('Logout');
-  };
+  const { logout } = useContext(AuthContext);
 
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
@@ -15,7 +14,7 @@ export default function CustomDrawerContent(props) {
         <Text style={styles.headerTitle}>Menu</Text>
       </View>
       <DrawerItemList {...props} />
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <MaterialIcons name="logout" size={24} color={Colors.text} />
         <Text style={styles.logoutButtonText}>Sair</Text>
       </TouchableOpacity>
