@@ -8,11 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RequestParam;
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/hemogramas")
@@ -44,16 +45,20 @@ public class HemogramaApiController {
         }
     }
 
-    // Endpoint para retornar os hemogramas mais recentes
     @GetMapping("/recentes")
-    public List<HemogramaResumoDto> getHemogramasRecentes() {
-        return storageService.getRecentHemogramas().stream()
-                .map(HemogramaResumoDto::from)
-                .collect(Collectors.toList());
+    public Page<HemogramaResumoDto> getHemogramasRecentes(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<HemogramaData> paginaDeDados = storageService.getRecentHemogramas(pageable);
+
+        // Converte Page<HemogramaData> para Page<HemogramaResumoDto>
+        return paginaDeDados.map(HemogramaResumoDto::from);
     }
 
-    // Endpoint para retornar o detalhe de um hemograma específico
-
+    // Endpoint para retornar o detalhe de um hemograma específico pelo ID
     @GetMapping("/{id}")
     public ResponseEntity<HemogramaResumoDto> getHemogramaPorId(@PathVariable String id) {
         return storageService.findById(id)
