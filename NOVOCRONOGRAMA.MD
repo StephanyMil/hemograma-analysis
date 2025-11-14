@@ -1,100 +1,234 @@
-Semana 1 — 05/10 a 11/10 (fechar a “ponta a ponta”)
-Aline Nunes
+# 🎯 Cronograma Final - Projeto Análise HIV
 
- Revisar logs do parser (HemogramaFhirParserService) e garantir mensagens claras quando não encontrar CBC.
+**Período: 14/11 a 25/11 (11 dias úteis)**  
+**Meta: Sistema de contadores epidemiológicos funcionando**
 
- Revisar endpoints e mensagem de erro que não foi gerada
+---
 
+## ✅ **JÁ IMPLEMENTADO (70%)**
 
+### **Backend:**
+- ✅ Spring Boot + PostgreSQL + HAPI FHIR funcionando
+- ✅ `SyntheticHemogramGeneratorService` - gera hemogramas sintéticos
+- ✅ `HemogramaFhirParserService` - **JÁ TEM detecção risco HIV!**
+- ✅ APIs básicas: `/api/hemogramas/recentes` e `/{id}`
+- ✅ DTOs com campos `riscoHiv` e `motivoRisco`
+- ✅ Webhooks HAPI → Spring Boot (90% funcional)
 
-Ayumi
+### **Frontend:**
+- ✅ React Native app completo com navegação
+- ✅ Integração com APIs backend funcionando  
+- ✅ Autenticação JWT + telas principais
+- ✅ Componentes para gráficos preparados
 
- Criar Sender simples (service + command endpoint) para enviar Observations ao HAPI:
+---
 
-Endpoint sugerido: POST /tools/send-to-hapi?qtde=100
+## 🚨 **O QUE FALTA (30%)**
 
-Internamente: chama SyntheticHemogramGeneratorService → para cada JSON, POST no HAPI Observation (http://localhost:8090/fhir/Observation)
+### **📊 Sistema Core:**
+1. **Gerador de Pacientes FHIR** - criar pacientes com região, idade, sexo
+2. **Sistema de Contadores** - salvar estatísticas agregadas (não dados individuais)
+3. **Kafka** - notificações quando detecta novos casos HIV
+4. **APIs Estatísticas** - endpoints para dashboard com contadores
+5. **Dashboard Tempo Real** - frontend consumindo estatísticas + notificações
 
-Logar ids criados pelo HAPI.
+---
 
- Criar um script .http (ou coleção Postman) com as chamadas de teste (gerar, enviar, health).
+# 📅 **CRONOGRAMA**
 
- PR: “feat: sender HAPI + coleção de testes”.
+## **SEMANA 1: 14/11 a 20/11**
 
-Aline Lima
+### **👩‍💻 BACKEND (Aline Nunes + Ayumi)**
 
- Criar endpoint de consulta para o frontend (sem persistir nada por enquanto):
+**Aline Nunes (4 tarefas):**
 
-GET /api/hemogramas/recentes: retorna lista com campos mínimos (id, data, leucócitos, hemoglobina, plaquetas, hematócrito).
+1. **Gerador de Pacientes FHIR**
+   - Criar `PacienteDto` (id, nome, idade, sexo, região, cpf)
+   - Criar `SyntheticPatientGeneratorService` 
+   - Distribuição realista: idade (0-100), sexo (M/F), regiões brasileiras
+   - Integrar com `SyntheticHemogramGeneratorService`
 
-Fonte dos dados: option A: consultar diretamente o HAPI (/Observation?code=58410-2&_sort=-date&_count=20) usando um client REST no back OU
-option B: manter buffer em memória com os últimos recebidos via subscription (simples Map/List estática).
+2. **Sistema de Contadores**
+   - Entity `ContadorHiv` (data, faixaEtaria, sexo, regiao, quantidade)
+   - Repository + Service para incrementar contadores
+   - Lógica: detectou HIV → incrementa contador (não salva hemograma individual)
 
-GET /api/hemogramas/{id}: retorna detalhe (mesmos campos).
+3. **Kafka Producer**
+   - Configurar Kafka no Spring Boot
+   - Criar `NotificacaoService` 
+   - Enviar evento quando detecta novo caso HIV
+   - Payload: {"tipo": "NOVO_CASO_HIV", "regiao": "X", "timestamp": "..."}
 
- Incluir exemplos no rotas.md (depois do merge da Aline N.).
+4. **APIs de Estatísticas**
+   - `GET /api/estatisticas/por-regiao` - contadores por região
+   - `GET /api/estatisticas/por-idade` - contadores por faixa etária  
+   - `GET /api/estatisticas/resumo` - total casos + tendência
 
- PR: “feat: endpoints de leitura p/ frontend (recentes + detalhe)”.
+**Ayumi (4 tarefas):**
 
-Stephany
+1. **Kafka Consumer**
+   - Configurar consumer Spring Boot
+   - Receber notificações e logar/processar
+   - Preparar estrutura para frontend consumir
 
- Criar app RN (se já existe, só organizar pastas):
+2. **Processamento Automático**
+   - `@Scheduled` a cada 30 minutos
+   - Gerar 5-10 pacientes + hemogramas
+   - Detectar HIV + incrementar contadores + enviar Kafka
+   - Simular laboratório real
 
-Telas: Dashboard, Lista, Detalhe.
+3. **APIs de Busca e Filtros**
+   - `GET /api/pacientes-risco?dataInicio=X&regiao=Y`
+   - Filtros por período, região, faixa etária
+   - Paginação para grandes volumes
 
-Serviço HTTP (Axios) com baseURL configurável.
+4. **Validações e Robustez**
+   - Validar dados FHIR de entrada
+   - Tratamento de erros robusto
+   - Logs detalhados para debug
+   - Health checks dos sistemas
 
- Mock primeiro: arquivo mock/hemogramas.json com os mesmos campos que o endpoint do back vai expor.
+---
 
- Gráficos (lib sugerida): react-native-svg + victory-native ou react-native-chart-kit.
+### **🎨 FRONTEND (Stephany + Aline Lima)**
 
-Dashboard: 2 gráficos simples (ex.: distribuição de hemoglobina, trend de leucócitos).
+**Stephany (4 tarefas):**
 
- README do mobile com como rodar e prints.
+1. **Dashboard Estatísticas**
+   - Consumir APIs `/api/estatisticas/*`
+   - Gráficos por região (mapa ou barras)
+   - Gráficos por faixa etária
+   - Cards com totais e percentuais
 
- PR: “feat: dashboard + gráficos com mock + estrutura http”.
+2. **Notificações Tempo Real**
+   - Integrar Kafka consumer no React Native
+   - Toast/Alert quando novo caso detectado
+   - Lista de notificações recentes
+   - Badge com contador não lidas
 
-Checkpoint:
+3. **Tela de Análises Detalhadas**
+   - Filtros por período, região, idade
+   - Exportar dados (JSON para análise)
+   - Comparação períodos (mês atual vs anterior)
+   - Gráficos de tendência temporal
 
-Enviar 100 Observations ao HAPI com o sender.
+4. **Polish UI/UX**
+   - Loading states em todas as telas
+   - Error handling com retry
+   - Pull to refresh nos dados
+   - Otimização performance listas
 
-Receber via /fhir/subscription (log ok).
+**Aline Lima (4 tarefas):**
 
-Front abrindo Dashboard com mock e conseguindo trocar para API se o endpoint /api/hemogramas/recentes já estiver pronto.
+1. **Web Dashboard Básico**
+   - Página HTML simples para desktop
+   - Consumir mesmas APIs de estatísticas
+   - Gráficos com Chart.js ou similar
+   - Responsivo para apresentação
 
-Semana 2 — 12/10 a 17/10 (travar demo e polir)
-Aline Nunes
+2. **Sistema de Usuários Completo**
+   - CRUD usuários no backend (se não tiver)
+   - Tela gestão completa no mobile
+   - Permissões básicas (admin vs user)
+   - Validações de formulário
 
- Ajustar CORS (se o mobile rodar em outro host/porta).
+3. **Tela de Relatórios**
+   - Relatório epidemiológico formatado
+   - Resumo executivo com insights
+   - Comparação entre regiões
+   - Export para apresentação
 
- Revisar SecurityConfig (rotas que o mobile usa devem estar liberadas ou com basic auth documentada).
+4. **Integração e Testes**
+   - Testar fluxo completo end-to-end
+   - Validar todas as integrações
+   - Documentar bugs e corrigir
+   - Preparar dados para demo
 
- rotas.md: adicionar erros comuns (ex.: 201 sem log, como vimos) e como depurar.
+---
 
-Ayumi
+## **SEMANA 2: 21/11 a 25/11 - FINALIZAÇÃO**
 
- Melhorar respostas do sender: retornar JSON com { enviados, criados: [ {id, status} ] }.
+### **21/11 (Quinta):**
+- **Todos:** Integração final + testes sistema completo
+- **Todos:** Ajustes baseados em testes
 
- Atalho de testes: endpoint GET /tools/hapi/ping para checar HAPI on-line (status 200).
+### **22/11 (Sexta):**
+- **Backend:** Performance tuning + logs finais
+- **Frontend:** Build final + teste dispositivos
 
-Aline Lima
+### **23/11 (Sábado):**
+- **Todos:** Documentação final + README
+- **Todos:** Preparação apresentação
 
- Endpoint GET /api/metrics/resumo para o Dashboard:
+### **24/11 (Domingo):**
+- **Todos:** Ensaio da apresentação
+- **Todos:** Últimos ajustes
 
-Ex.: { totalObservations, mediaHemoglobina, mediaLeucocitos, ultimosDias:[{dia, qtd}] }
+### **25/11 (Segunda):**
+- **🎉 ENTREGA FINAL**
 
-Fonte: computar em memória a partir do buffer OU consultar HAPI e agregar (simples).
+---
 
- Paginação server-side em /api/hemogramas/recentes (parâmetros page, size).
+## 🎯 **RESULTADO ESPERADO**
 
-Stephany
+### **Sistema Final:**
+1. **Recebe hemogramas** → analisa campos HIV
+2. **Detecta casos suspeitos** → incrementa contadores no banco
+3. **Envia notificação Kafka** → alert tempo real
+4. **Dashboard mostra estatísticas** → gráficos por região/idade
+5. **Processamento automático** → simula laboratório real
 
- Substituir mock pelo cliente HTTP real (feature flag: USE_API=true em .env).
+### **Fluxo Completo:**
+```
+Laboratório (simulado) → Hemograma FHIR → 
+Análise HIV → Contador++ → Kafka → 
+Dashboard atualiza → Professor impressionado! 🎉
+```
 
- Tela de Lista consumindo /api/hemogramas/recentes com paginação/scroll.
+### **Dados no Banco:**
+- **NÃO:** hemogramas individuais 
+- **SIM:** contadores agregados (ex: "Sudeste, 30-45 anos, Mulheres: 15 casos")
 
- Tela Detalhe consumindo /api/hemogramas/{id}.
+### **Notificações:**
+- **Kafka:** "Novo caso detectado na região X"
+- **Mobile:** Toast notification em tempo real
+- **Web:** Badge atualiza automaticamente
 
- Dashboard consumindo /api/metrics/resumo.
+---
 
- Polimento de UI (loading, empty states, erros).
+## 📊 **ENTREGAS POR SEMANA**
+
+### **Fim Semana 1 (20/11):**
+- ✅ Geração pacientes + contadores funcionando
+- ✅ Kafka producer/consumer operacional  
+- ✅ APIs estatísticas retornando dados reais
+- ✅ Dashboard frontend consumindo APIs
+
+### **Fim Semana 2 (25/11):**
+- ✅ Sistema completo funcionando
+- ✅ Demo ao vivo preparada
+- ✅ Documentação completa
+- ✅ **PROJETO ENTREGUE**
+
+---
+
+## 💡 **DIFERENCIAIS DO PROJETO**
+
+### **Inovação Técnica:**
+- **Sistema epidemiológico real** (não CRUD simples)
+- **FHIR + Kafka** (tecnologias profissionais)
+- **Tempo real** (contadores atualizando automaticamente)
+- **Mobile + Web** (multiplataforma)
+
+### **Impacto Social:**
+- **Saúde pública** (detecção precoce HIV)
+- **Análise epidemiológica** (padrões por região/idade)
+- **Sistema laboratório** (aplicação real)
+
+**Professor vai ficar impressionado com a complexidade técnica e relevância social!** 🚀
+
+---
+
+**🎯 Status: 70% → 100% em 11 dias**  
+**📊 Foco: Sistema de contadores + notificações tempo real**  
+**🎉 Meta: Demonstração funcionando ao vivo no dia 25/11**
