@@ -50,20 +50,38 @@ public class SyntheticToolHemogramGeneratorService {
         return createdIds;
     }
 
-    private Observation generateSyntheticHemogram(int index) {
+   private Observation generateSyntheticHemogram(int index) {
         Observation observation = new Observation();
         observation.setId("synthetic-hemogram-" + System.currentTimeMillis() + "-" + index);
         observation.setStatus("final");
 
-        // Adiciona componentes do hemograma
-        observation.addComponent("hemoglobin", "g/dL", generateValue(12.0, 16.0));
-        observation.addComponent("hematocrit", "%", generateValue(36.0, 48.0));
-        observation.addComponent("red-blood-cells", "million/mm³", generateValue(4.2, 5.9));
-        observation.addComponent("white-blood-cells", "thousand/mm³", generateValue(4.5, 11.0));
-        observation.addComponent("platelets", "thousand/mm³", generateValue(150.0, 450.0));
-        observation.addComponent("neutrophils", "%", generateValue(40.0, 75.0));
-        observation.addComponent("lymphocytes", "%", generateValue(20.0, 50.0));
-        observation.addComponent("monocytes", "%", generateValue(2.0, 10.0));
+        // 30% chance de gerar caso com risco HIV (para demonstração)
+        boolean generateRisk = Math.random() < 0.30;
+        
+        if (generateRisk) {
+            // CASO COM RISCO HIV - valores baixos
+            logger.info("Gerando hemograma com risco HIV - ID: " + observation.getId());
+            
+            observation.addComponent("hemoglobin", "g/dL", generateValue(8.0, 10.5));  // Anemia
+            observation.addComponent("white-blood-cells", "thousand/mm³", generateValue(2.0, 3.5)); // Leucopenia
+            observation.addComponent("lymphocytes", "%", generateValue(10.0, 18.0)); // Linfopenia
+            observation.addComponent("hematocrit", "%", generateValue(25.0, 35.0));
+            observation.addComponent("red-blood-cells", "million/mm³", generateValue(3.0, 4.0));
+            observation.addComponent("platelets", "thousand/mm³", generateValue(100.0, 200.0));
+            observation.addComponent("neutrophils", "%", generateValue(60.0, 80.0));
+            observation.addComponent("monocytes", "%", generateValue(8.0, 15.0));
+            
+        } else {
+            // CASO NORMAL - valores dentro da faixa normal
+            observation.addComponent("hemoglobin", "g/dL", generateValue(12.0, 16.0));
+            observation.addComponent("hematocrit", "%", generateValue(36.0, 48.0));
+            observation.addComponent("red-blood-cells", "million/mm³", generateValue(4.2, 5.9));
+            observation.addComponent("white-blood-cells", "thousand/mm³", generateValue(4.5, 11.0));
+            observation.addComponent("platelets", "thousand/mm³", generateValue(150.0, 450.0));
+            observation.addComponent("neutrophils", "%", generateValue(40.0, 75.0));
+            observation.addComponent("lymphocytes", "%", generateValue(20.0, 50.0));
+            observation.addComponent("monocytes", "%", generateValue(2.0, 10.0));
+        }
 
         return observation;
     }
