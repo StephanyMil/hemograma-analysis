@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.dto.HemogramaDto;
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.service.HemogramaFhirParserService;
@@ -32,12 +33,16 @@ public class FhirSubscriptionController {
     @Value("${fhir.payload.max-size:1048576}")
     private int maxPayloadSize;
 
+    @Value("${hapi.fhir.url:http://localhost:8090/fhir}")
+    private String hapiFhirBaseUrl;
+
     @Autowired
     private HemogramaFhirParserService hemogramaParser;
 
     @Autowired
     private HemogramaStorageService hemogramaStorageService;
 
+    private final RestTemplate restTemplate = new RestTemplate();
     private final AtomicLong requestCounter = new AtomicLong(0);
     private final AtomicLong successCounter = new AtomicLong(0);
     private final AtomicLong errorCounter = new AtomicLong(0);
@@ -66,10 +71,11 @@ public class FhirSubscriptionController {
             logger.info("Form params - Trace: {}, ID: {}, Type: {}, Status: {}", 
                        traceId, observationId, resourceType, status);
             
-            // Construir payload FHIR baseado nos parâmetros recebidos
-            String fhirPayload = construirPayloadFromParams(request, observationId, resourceType);
+            // Buscar payload FHIR real do servidor HAPI
+            String fhirPayload = buscarObservationDoHapi(observationId, resourceType, traceId);
             
-            logger.info("Payload construído - Trace: {}: {}", traceId, fhirPayload);
+            logger.info("Payload obtido do HAPI - Trace: {}, Size: {} chars", 
+                       traceId, fhirPayload != null ? fhirPayload.length() : 0);
 
             if (!isValidPayload(fhirPayload)) {
                 errorCounter.incrementAndGet();
@@ -119,49 +125,46 @@ public class FhirSubscriptionController {
     }
 
     /**
-     * Constrói payload FHIR baseado nos parâmetros do form-data do HAPI
+     * Busca dados reais da Observation no servidor HAPI FHIR
      */
-    private String construirPayloadFromParams(HttpServletRequest request, String observationId, String resourceType) {
-        // Se temos ID da observação, construir payload básico
-        if (observationId != null && "Observation".equals(resourceType)) {
-            // Por enquanto, criar um payload mínimo que vai ser processado pelo parser
-            // TODO: Em implementação futura, buscar dados completos do HAPI
-            StringBuilder payload = new StringBuilder();
-            payload.append("{\n");
-            payload.append("  \"resourceType\": \"Observation\",\n");
-            payload.append("  \"id\": \"").append(observationId).append("\",\n");
-            payload.append("  \"status\": \"final\",\n");
-            payload.append("  \"code\": {\n");
-            payload.append("    \"coding\": [{\n");
-            payload.append("      \"system\": \"http://loinc.org\",\n");
-            payload.append("      \"code\": \"58410-2\",\n");
-            payload.append("      \"display\": \"Complete blood count\"\n");
-            payload.append("    }]\n");
-            payload.append("  },\n");
-            payload.append("  \"component\": [\n");
-            payload.append("    {\n");
-            payload.append("      \"code\": {\n");
-            payload.append("        \"coding\": [{\n");
-            payload.append("          \"system\": \"http://loinc.org\",\n");
-            payload.append("          \"code\": \"26464-8\",\n");
-            payload.append("          \"display\": \"Leukocytes\"\n");
-            payload.append("        }]\n");
-            payload.append("      },\n");
-            payload.append("      \"valueQuantity\": {\n");
-            payload.append("        \"value\": 7500,\n");
-            payload.append("        \"unit\": \"/uL\"\n");
-            payload.append("      }\n");
-            payload.append("    }\n");
-            payload.append("  ]\n");
-            payload.append("}");
-            
-            logger.info("Payload FHIR construído para Observation ID: {}", observationId);
-            return payload.toString();
+    private String buscarObservationDoHapi(String observationId, String resourceType, String traceId) {
+        
+        if (observationId == null || !"Observation".equals(resourceType)) {
+            logger.warn("ID ou tipo de recurso inválido - Trace: {}, ID: {}, Type: {}", 
+                       traceId, observationId, resourceType);
+            return null;
         }
         
-        // Se não conseguir construir payload, retornar indicação
-        logger.warn("Não foi possível construir payload - ID: {}, Type: {}", observationId, resourceType);
-        return null;
+        try {
+            // Construir URL da API HAPI FHIR
+            String fhirUrl = hapiFhirBaseUrl + "/Observation/" + observationId;
+            
+            logger.info("Buscando Observation no HAPI - Trace: {}, URL: {}", traceId, fhirUrl);
+            
+            // Fazer chamada HTTP para buscar dados reais
+            ResponseEntity<String> response = restTemplate.getForEntity(fhirUrl, String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                String fhirJson = response.getBody();
+                logger.info("Observation obtida com sucesso - Trace: {}, Size: {} chars", 
+                           traceId, fhirJson.length());
+                
+                // Log dos primeiros caracteres para debug (sem dados sensíveis)
+                String preview = fhirJson.length() > 200 ? fhirJson.substring(0, 200) + "..." : fhirJson;
+                logger.debug("Preview do FHIR JSON - Trace: {}: {}", traceId, preview);
+                
+                return fhirJson;
+            } else {
+                logger.warn("Resposta inválida do HAPI - Trace: {}, Status: {}", 
+                           traceId, response.getStatusCode());
+                return null;
+            }
+            
+        } catch (Exception e) {
+            logger.error("Erro ao buscar Observation no HAPI - Trace: {}, ID: {}, Erro: {}", 
+                        traceId, observationId, e.getMessage(), e);
+            return null;
+        }
     }
 
     private boolean isValidPayload(String payload) {
@@ -196,13 +199,13 @@ public class FhirSubscriptionController {
                 hemogramaStorageService.addHemograma(h);
                 if (h.isRiscoHiv()) {
                     riscoCount++;
-                    logger.info("Hemograma com risco HIV detectado - Trace: {}, ID: {}", 
-                               traceId, h.getObservationId());
+                    logger.warn("🚨 Hemograma com risco HIV detectado - Trace: {}, ID: {}, Motivo: {}", 
+                               traceId, h.getObservationId(), h.getMotivoRisco());
                 }
             }
             
             if (riscoCount > 0) {
-                logger.warn("{} hemograma(s) com risco HIV de {} processados - Trace: {}", 
+                logger.warn("🚨 {} hemograma(s) com risco HIV de {} processados - Trace: {}", 
                            riscoCount, hemogramas.size(), traceId);
             }
             
@@ -237,7 +240,7 @@ public class FhirSubscriptionController {
 
     @GetMapping(path = "/test", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Controller FHIR funcionando");
+        return ResponseEntity.ok("Controller FHIR funcionando - Conectado ao HAPI: " + hapiFhirBaseUrl);
     }
 
     @GetMapping(path = "/metrics", produces = MediaType.APPLICATION_JSON_VALUE)

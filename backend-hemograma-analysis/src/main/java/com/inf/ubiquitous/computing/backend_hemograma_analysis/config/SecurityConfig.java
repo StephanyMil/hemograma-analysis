@@ -1,6 +1,5 @@
 package com.inf.ubiquitous.computing.backend_hemograma_analysis.config;
 
-import com.inf.ubiquitous.computing.backend_hemograma_analysis.auth.service.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +13,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.auth.service.JwtRequestFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -39,15 +40,19 @@ public class SecurityConfig {
 
                         // API de hemogramas - sem autenticação
                         .requestMatchers("/api/hemogramas/**").permitAll()
-                        .requestMatchers("/api/hemogram/**").permitAll() // NOVO: para o gerador
+                        .requestMatchers("/api/hemogram/**").permitAll()
+
+                        // API de estatísticas - sem autenticação (ADICIONADO)
+                        .requestMatchers("/api/estatisticas/**").permitAll()
 
                         // Endpoints de teste - sem autenticação
                         .requestMatchers("/test/**").permitAll()
+                        .requestMatchers("/api/teste-basico/**").permitAll()
 
-                        // NOVO: Endpoints de ferramentas (tools) - sem autenticação
+                        // Endpoints de ferramentas (tools) - sem autenticação
                         .requestMatchers("/tools/**").permitAll()
 
-                        // NOVO: Actuator (health check) - sem autenticação
+                        // Actuator (health check) - sem autenticação
                         .requestMatchers("/actuator/**").permitAll()
 
                         // Documentação (Swagger) - sem autenticação

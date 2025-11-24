@@ -52,9 +52,9 @@ public class FhirObservationService {
             fhirObservation.set("code", code);
 
             // Subject (paciente de referência)
-            ObjectNode subject = objectMapper.createObjectNode();
-            subject.put("reference", "Patient/example");
-            fhirObservation.set("subject", subject);
+          ObjectNode subject = objectMapper.createObjectNode();
+          subject.put("display", "Paciente sintético");
+          fhirObservation.set("subject", subject);
 
             // Effective date time
             String effectiveDateTime = DateTimeFormatter.ISO_INSTANT.format(Instant.now());

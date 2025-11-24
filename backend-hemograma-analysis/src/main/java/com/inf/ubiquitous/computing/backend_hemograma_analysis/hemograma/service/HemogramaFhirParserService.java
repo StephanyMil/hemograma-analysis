@@ -11,9 +11,11 @@ import org.hl7.fhir.r4.model.Observation;
 import org.hl7.fhir.r4.model.Quantity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.dto.HemogramaDto;
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.dto.PacienteDto;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
@@ -22,6 +24,9 @@ import ca.uhn.fhir.parser.IParser;
 public class HemogramaFhirParserService {
 
     private static final Logger logger = LoggerFactory.getLogger(HemogramaFhirParserService.class);
+
+    @Autowired
+    private ContadorHivService contadorHivService;
 
     private final FhirContext fhirContext;
     private final IParser jsonParser;
@@ -69,7 +74,48 @@ public class HemogramaFhirParserService {
             dtos.add(dto);
         }
 
+        // *** NOVA FUNCIONALIDADE: Incrementa contadores para casos HIV detectados ***
+        for (HemogramaDto dto : dtos) {
+            if (dto.isRiscoHiv()) {
+                try {
+                    // Cria paciente fictício para contadores (já que hemograma não tem dados pessoais)
+                    PacienteDto pacienteFicticio = criarPacienteFicticio();
+                    contadorHivService.incrementarContador(pacienteFicticio);
+                    
+                    logger.warn("🚨 RISCO HIV DETECTADO no hemograma {} - Contador incrementado! Motivo: {}", 
+                               dto.getObservationId(), dto.getMotivoRisco());
+                               
+                } catch (Exception e) {
+                    logger.error("Erro ao incrementar contador HIV: {}", e.getMessage());
+                }
+            }
+        }
+
         return dtos;
+    }
+
+    /**
+     * Cria paciente fictício para contabilização epidemiológica
+     * (hemogramas FHIR não contém dados demográficos completos)
+     */
+    private PacienteDto criarPacienteFicticio() {
+        PacienteDto paciente = new PacienteDto();
+        
+        // Simula distribuição demográfica brasileira
+        String[] regioes = {"Sudeste", "Nordeste", "Sul", "Norte", "Centro-Oeste"};
+        String[] estados = {"SP", "RJ", "MG", "BA", "RS", "PR", "PE", "CE", "GO", "AM"};
+        String[] sexos = {"M", "F"};
+        
+        java.util.Random random = new java.util.Random();
+        
+        paciente.setId("FHIR-" + System.currentTimeMillis());
+        paciente.setNome("Paciente FHIR");
+        paciente.setIdade(20 + random.nextInt(60)); // 20-80 anos
+        paciente.setSexo(sexos[random.nextInt(sexos.length)]);
+        paciente.setRegiao(regioes[random.nextInt(regioes.length)]);
+        paciente.setEstado(estados[random.nextInt(estados.length)]);
+        
+        return paciente;
     }
 
     /**
