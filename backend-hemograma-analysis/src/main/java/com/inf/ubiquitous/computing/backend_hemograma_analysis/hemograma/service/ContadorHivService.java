@@ -26,11 +26,22 @@ public class ContadorHivService {
     @Autowired
     private ContadorHivRepository contadorRepository;
     
+    @Autowired
+    private NotificacaoService notificacaoService;
+
     /**
      * Incrementa contador para um caso HIV detectado
      */
     @Transactional
     public void incrementarContador(PacienteDto paciente) {
+        incrementarContador(paciente, "Risco HIV detectado");
+    }
+    
+    /**
+     * Incrementa contador para um caso HIV detectado com motivo específico
+     */
+    @Transactional
+    public void incrementarContador(PacienteDto paciente, String motivoRisco) {
         try {
             LocalDate hoje = LocalDate.now();
             String faixaEtaria = calcularFaixaEtaria(paciente.getIdade());
@@ -42,11 +53,14 @@ public class ContadorHivService {
                     paciente.getRegiao(), paciente.getEstado()
                 );
             
+            long novoTotal = 0;
+            
             if (contadorExistente.isPresent()) {
                 // Incrementa contador existente
                 ContadorHiv contador = contadorExistente.get();
                 contador.incrementar();
                 contadorRepository.save(contador);
+                novoTotal = contador.getQuantidade();
                 
                 logger.info("Contador HIV incrementado: {} - Total: {}", 
                            contador.toString(), contador.getQuantidade());
@@ -57,13 +71,48 @@ public class ContadorHivService {
                     paciente.getRegiao(), paciente.getEstado(), 1
                 );
                 contadorRepository.save(novoContador);
+                novoTotal = 1;
                 
                 logger.info("Novo contador HIV criado: {}", novoContador.toString());
+            }
+            
+            // 🆕 ENVIA NOTIFICAÇÃO KAFKA
+            try {
+                notificacaoService.enviarNotificacaoHivDetectado(
+                    "COUNTER-" + System.currentTimeMillis(), 
+                    paciente, 
+                    motivoRisco
+                );
+                
+                // Envia também notificação de estatísticas atualizadas
+                long totalRegiao = calcularTotalCasosPorRegiao(paciente.getRegiao());
+                notificacaoService.enviarNotificacaoEstatisticas(paciente.getRegiao(), totalRegiao);
+                
+            } catch (Exception kafkaError) {
+                logger.error("Erro ao enviar notificação Kafka (contador salvo com sucesso): {}", 
+                           kafkaError.getMessage());
             }
             
         } catch (Exception e) {
             logger.error("Erro ao incrementar contador HIV: {}", e.getMessage(), e);
         }
+    }
+    
+    /**
+     * Calcula total de casos por região para notificações
+     */
+    private long calcularTotalCasosPorRegiao(String regiao) {
+        try {
+            List<Object[]> dados = contadorRepository.contarPorRegiao();
+            for (Object[] linha : dados) {
+                if (regiao.equals((String) linha[0])) {
+                    return ((Number) linha[1]).longValue();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Erro ao calcular total por região: {}", e.getMessage());
+        }
+        return 0L;
     }
     
     /**
