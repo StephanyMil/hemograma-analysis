@@ -1,19 +1,20 @@
-import { useContext, useState, useEffect } from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { View, ActivityIndicator } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { AuthContext } from '../context/AuthContext';
+import { useContext, useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { isFirstUser } from '../api/apiService';
 import Colors from '../constants/Colors';
+import { AuthContext } from '../context/AuthContext';
 
+import CustomDrawerContent from '../components/CustomDrawerContent';
+import CreateUserScreen from '../screens/CreateUserScreen';
+import HomeScreen from '../screens/HomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterFirstUserScreen from '../screens/RegisterFirstUserScreen';
-import HomeScreen from '../screens/HomeScreen';
+import StatisticsScreen from '../screens/StatisticsScreen'; // <--- IMPORTE AQUI
 import UserManagementScreen from '../screens/UserManagementScreen';
-import CreateUserScreen from '../screens/CreateUserScreen';
-import CustomDrawerContent from '../components/CustomDrawerContent';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -33,15 +34,24 @@ function MainDrawerNavigator() {
         name="Dashboard"
         component={HomeScreen}
         options={{
-          title: 'Dashboard de Hemogramas',
-          drawerIcon: ({ color }) => <MaterialIcons name="dashboard" size={24} color={color} />
+          title: 'Hemogramas',
+          drawerIcon: ({ color }) => <MaterialIcons name="list" size={24} color={color} />
+        }}
+      />
+      {/* ADICIONE ESTA TELA */}
+      <Drawer.Screen
+        name="Statistics"
+        component={StatisticsScreen}
+        options={{
+          title: 'EstatÌsticas',
+          drawerIcon: ({ color }) => <MaterialIcons name="insert-chart" size={24} color={color} />
         }}
       />
       <Drawer.Screen
         name="UserManagement"
         component={UserManagementScreen}
         options={{
-          title: 'Gerenciar Usu√°rios',
+          title: 'Gerenciar Usu·rios',
           drawerIcon: ({ color }) => <MaterialIcons name="people" size={24} color={color} />
         }}
       />
@@ -49,6 +59,7 @@ function MainDrawerNavigator() {
   );
 }
 
+// ... Resto do arquivo permanece igual ...
 export default function AppNavigator() {
   const { userToken, isLoading: isAuthLoading } = useContext(AuthContext);
   const [isFirst, setIsFirst] = useState(false);
@@ -60,7 +71,7 @@ export default function AppNavigator() {
         const response = await isFirstUser();
         setIsFirst(response.data.isFirstUser);
       } catch (error) {
-        console.error("N√£o foi poss√≠vel verificar o primeiro usu√°rio.", error);
+        console.error("N„o foi possÌvel verificar o primeiro usu·rio.", error);
         setIsFirst(false);
       } finally {
         setIsCheckingFirst(false);
@@ -96,7 +107,7 @@ export default function AppNavigator() {
               component={CreateUserScreen}
               options={{
                 headerShown: true,
-                title: 'Novo Usu√°rio',
+                title: 'Novo Usu·rio',
                 headerStyle: { backgroundColor: Colors.background },
                 headerTintColor: Colors.text,
               }}
