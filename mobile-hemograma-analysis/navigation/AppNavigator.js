@@ -13,6 +13,7 @@ import RegisterFirstUserScreen from '../screens/RegisterFirstUserScreen';
 import HomeScreen from '../screens/HomeScreen';
 import UserManagementScreen from '../screens/UserManagementScreen';
 import CreateUserScreen from '../screens/CreateUserScreen';
+import EditUserScreen from '../screens/EditUserScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 
 const Stack = createStackNavigator();
@@ -97,6 +98,16 @@ export default function AppNavigator() {
               options={{
                 headerShown: true,
                 title: 'Novo Usuário',
+                headerStyle: { backgroundColor: Colors.background },
+                headerTintColor: Colors.text,
+              }}
+            />
+            <Stack.Screen
+              name="EditUser"
+              component={EditUserScreen}
+              options={{
+                headerShown: true,
+                title: 'Editar Usuário',
                 headerStyle: { backgroundColor: Colors.background },
                 headerTintColor: Colors.text,
               }}
