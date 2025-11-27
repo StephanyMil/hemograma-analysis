@@ -9,7 +9,7 @@ import * as SecureStore from 'expo-secure-store';
 // - Windows: no terminal, digite `ipconfig` e procure por "Endereço IPv4".
 // - Mac/Linux: no terminal, digite `ifconfig` ou `ip a` (ex: 192.168.1.XX).
 // -------------------------------------------------------------------------
-const BASE_URL = 'http://192.168.136.115:8080'; // <-- MUDE ESTE VALOR
+const BASE_URL = 'http://192.168.100.247:8080'; // <-- MUDE ESTE VALOR
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -23,11 +23,17 @@ apiClient.interceptors.request.use(async (config) => {
   return config;
 });
 
+// Auth
 export const isFirstUser = () => apiClient.get('/api/auth/is-first-user');
 export const registerFirstUser = (data: any) => apiClient.post('/api/auth/register-first-user', data);
 export const login = (data: any) => apiClient.post('/api/auth/login', data);
 
+// Hemogramas
 export const getRecentHemogramas = () => apiClient.get('/api/hemogramas/recentes');
 
+// Usuários
 export const createUser = (userData: any) => apiClient.post('/users', userData);
+export const getUsers = () => apiClient.get('/users');
+export const updateUser = (id: string, data: any) => apiClient.put(`/users/${id}`, data);
+export const deleteUser = (id: string) => apiClient.delete(`/users/${id}`);
 
