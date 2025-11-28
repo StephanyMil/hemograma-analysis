@@ -48,4 +48,8 @@ public class Notificacao {
     protected void onCreate() {
         dataCriacao = LocalDateTime.now();
     }
+
+    public boolean isLida() {
+        return lida;
+    }
 }

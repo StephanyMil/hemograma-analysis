@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NotificacaoRepository extends JpaRepository<Notificacao, Long> {
@@ -28,6 +29,9 @@ public interface NotificacaoRepository extends JpaRepository<Notificacao, Long> 
 
     // Conta notificações não lidas
     long countByLidaFalse();
+
+    // ✅ NOVOS MÉTODOS para última notificação
+    Optional<Notificacao> findTopByOrderByDataCriacaoDesc();
 
     // Busca com paginação
     Page<Notificacao> findAllByOrderByDataCriacaoDesc(Pageable pageable);

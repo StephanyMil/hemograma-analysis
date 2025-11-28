@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sistema de Notificações em Tempo Real</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<h1>🔔 Notificações em Tempo Real - HIV</h1>
+
+<div>
+    <button onclick="conectarWebSocket()">▶️ Conectar</button>
+    <button onclick="desconectarWebSocket()">⏹️ Desconectar</button>
+    <button onclick="limparNotificacoes()">🗑️ Limpar</button>
+    <span id="status" style="margin-left: 20px; padding: 5px 10px; background: #f0f0f0;"></span>
+</div>
+
+<div style="display: flex; margin-top: 20px;">
+    <div style="flex: 1;">
+        <h3>📊 Estatísticas</h3>
+        <div id="estatisticas" style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
+            Aguardando conexão...
+        </div>
+    </div>
+
+    <div style="flex: 2; margin-left: 20px;">
+        <h3>🔔 Notificações em Tempo Real</h3>
+        <div id="notificacoes" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #fff;"></div>
+    </div>
+</div>
+
+<script>
+    let stompClient = null;
+    let notificacoesCount = 0;
+
+    function conectarWebSocket() {
+        const socket = new SockJS('http://localhost:8080/ws-notificacoes');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function(frame) {
+            atualizarStatus('✅ CONECTADO', '#d4edda');
+
+            // 🔥 INSCREVE PARA RECEBER NOTIFICAÇÕES EM TEMPO REAL
+            stompClient.subscribe('/topic/notificacoes-tempo-real', function(mensagem) {
+                const data = JSON.parse(mensagem.body);
+                adicionarNotificacaoTempoReal(data);
+            });
+
+            // Inscreve para estatísticas em tempo real
+            stompClient.subscribe('/topic/estatisticas-tempo-real', function(mensagem) {
+                const data = JSON.parse(mensagem.body);
+                atualizarEstatisticas(data);
+            });
+
+            // Solicita notificações iniciais
+            stompClient.subscribe('/user/queue/notificacoes.iniciais', function(mensagem) {
+                const data = JSON.parse(mensagem.body);
+                carregarNotificacoesIniciais(data);
+            });
+
+            // Solicita estatísticas atuais
+            stompClient.send("/app/estatisticas.atual", {});
+
+        }, function(error) {
+            atualizarStatus('❌ ERRO: ' + error, '#f8d7da');
+            console.error('Erro WebSocket:', error);
+        });
+    }
+
+    function desconectarWebSocket() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+            atualizarStatus('🔴 DESCONECTADO', '#f0f0f0');
+        }
+    }
+
+    function adicionarNotificacaoTempoReal(data) {
+        notificacoesCount++;
+        const notificacoesDiv = document.getElementById('notificacoes');
+
+        const notificacaoElement = document.createElement('div');
+        notificacaoElement.style.cssText = `
+                padding: 10px;
+                margin: 5px 0;
+                border-left: 4px solid #dc3545;
+                background: #fff3f3;
+                border-radius: 4px;
+                animation: fadeIn 0.5s;
+            `;
+
+        const notificacaoData = data.data;
+        notificacaoElement.innerHTML = `
+                <strong>🚨 ${notificacaoData.tipo || 'NOVA NOTIFICAÇÃO'}</strong>
+                <br><small>📅 ${new Date().toLocaleTimeString()}</small>
+                <br>👤 Paciente: ${notificacaoData.pacienteId || 'N/A'}
+                <br>📍 Região: ${notificacaoData.regiao || 'N/A'} - ${notificacaoData.estado || 'N/A'}
+                <br>🎯 Motivo: ${notificacaoData.motivoRisco || 'Risco HIV detectado'}
+                <br><em>${data.mensagem}</em>
+            `;
+
+        // Adiciona no topo
+        notificacoesDiv.insertBefore(notificacaoElement, notificacoesDiv.firstChild);
+
+        // Atualiza estatísticas
+        stompClient.send("/app/estatisticas.atual", {});
+
+        // 🔔 Notificação do navegador (se suportado)
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("Nova Notificação HIV", {
+                body: `Paciente ${notificacaoData.pacienteId} - ${notificacaoData.regiao}`,
+                icon: "/notification-icon.png"
+            });
+        }
+
+        console.log('Nova notificação em tempo real:', data);
+    }
+
+    function carregarNotificacoesIniciais(data) {
+        const notificacoesDiv = document.getElementById('notificacoes');
+
+        if (data.data && data.data.length > 0) {
+            data.data.forEach(notificacao => {
+                const element = document.createElement('div');
+                element.style.cssText = `
+                        padding: 8px;
+                        margin: 3px 0;
+                        border-left: 4px solid #6c757d;
+                        background: #f8f9fa;
+                        border-radius: 4px;
+                    `;
+
+                element.innerHTML = `
+                        <strong>📋 ${notificacao.tipo}</strong>
+                        <br><small>📍 ${notificacao.regiao} - ${notificacao.estado}</small>
+                        <br><small>👤 ${notificacao.pacienteId}</small>
+                    `;
+
+                notificacoesDiv.appendChild(element);
+            });
+        }
+    }
+
+    function atualizarEstatisticas(data) {
+        const estatisticasDiv = document.getElementById('estatisticas');
+        estatisticasDiv.innerHTML = `
+                <div><strong>Total de Notificações:</strong> ${data.totalNotificacoes || 0}</div>
+                <div><strong>Não Lidas:</strong> ${data.naoLidas || 0}</div>
+                <div><strong>Lidas:</strong> ${data.lidas || 0}</div>
+                <div><strong>Atualizado:</strong> ${new Date().toLocaleTimeString()}</div>
+            `;
+    }
+
+    function atualizarStatus(mensagem, cor) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.textContent = mensagem;
+        statusDiv.style.background = cor;
+    }
+
+    function limparNotificacoes() {
+        document.getElementById('notificacoes').innerHTML = '';
+        notificacoesCount = 0;
+    }
+
+    // Solicitar permissão para notificações do navegador
+    if ("Notification" in window) {
+        Notification.requestPermission();
+    }
+
+    // Conectar automaticamente ao carregar a página
+    window.onload = conectarWebSocket;
+
+    // Estilo para animação
+    const style = document.createElement('style');
+    style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>
