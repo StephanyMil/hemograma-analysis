@@ -44,6 +44,7 @@ public class SecurityConfig {
 
                         // API de estatísticas - sem autenticação (ADICIONADO)
                         .requestMatchers("/api/estatisticas/**").permitAll()
+                        .requestMatchers("/api/notificacao/**").permitAll()
 
                         // Endpoints de teste - sem autenticação
                         .requestMatchers("/test/**").permitAll()
@@ -54,6 +55,7 @@ public class SecurityConfig {
 
                         // Actuator (health check) - sem autenticação
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/ws-notificacoes/**").permitAll()
 
                         // Documentação (Swagger) - sem autenticação
                         .requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
