@@ -1,9 +1,17 @@
 package com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.controller;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.entity.ContadorHiv;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -116,7 +124,95 @@ public class EstatisticasController {
         
         return ResponseEntity.ok(resumoSimulacao);
     }
-    
+
+    /**
+     * GET /api/pacientes-risco
+     * Listagem filtrada e paginada de contadores HIV
+     *
+     * Parâmetros:
+     * - dataInicio: data inicial (formato: yyyy-MM-dd)
+     * - dataFim: data final (formato: yyyy-MM-dd)
+     * - regiao: Norte, Nordeste, Centro-Oeste, Sudeste, Sul
+     * - estado: SP, RJ, MG, etc.
+     * - faixaEtaria: 0-17, 18-29, 30-44, 45-59, 60-74, 75+
+     * - sexo: M ou F
+     * - page: número da página (começa em 0)
+     * - size: tamanho da página (padrão: 20)
+     * - sort: campo de ordenação (padrão: data,desc)
+     */
+    @GetMapping("/lista")
+    public ResponseEntity<Map<String, Object>> listarContadoresFiltrados(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+            @RequestParam(required = false) String regiao,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String faixaEtaria,
+            @RequestParam(required = false) String sexo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "data,desc") String[] sort) {
+
+        try {
+            // Validações
+            if (size > 100) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "erro", "Tamanho máximo da página é 100",
+                        "status", "erro"
+                ));
+            }
+
+            // Criar Pageable com ordenação
+            Sort.Direction direction = sort.length > 1 && sort[1].equalsIgnoreCase("asc")
+                    ? Sort.Direction.ASC
+                    : Sort.Direction.DESC;
+            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort[0]));
+
+            // Buscar com filtros
+            Page<ContadorHiv> resultado = contadorService.buscarContadoresFiltrados(
+                    dataInicio, dataFim, regiao, estado, faixaEtaria, sexo, pageable
+            );
+
+            // Montar resposta
+            Map<String, Object> response = new HashMap<>();
+            response.put("contadores", resultado.getContent());
+            response.put("paginacao", Map.of(
+                    "paginaAtual", resultado.getNumber(),
+                    "totalPaginas", resultado.getTotalPages(),
+                    "totalElementos", resultado.getTotalElements(),
+                    "tamanhoPagina", resultado.getSize(),
+                    "primeiro", resultado.isFirst(),
+                    "ultimo", resultado.isLast(),
+                    "vazio", resultado.isEmpty()
+            ));
+            response.put("filtros", Map.of(
+                    "dataInicio", dataInicio != null ? dataInicio.toString() : "não aplicado",
+                    "dataFim", dataFim != null ? dataFim.toString() : "não aplicado",
+                    "regiao", regiao != null ? regiao : "todas",
+                    "estado", estado != null ? estado : "todos",
+                    "faixaEtaria", faixaEtaria != null ? faixaEtaria : "todas",
+                    "sexo", sexo != null ? sexo : "todos"
+            ));
+
+            // Estatísticas dos resultados filtrados
+            int totalCasos = resultado.getContent().stream()
+                    .mapToInt(ContadorHiv::getQuantidade)
+                    .sum();
+
+            response.put("estatisticas", Map.of(
+                    "totalCasosNaPagina", totalCasos,
+                    "totalRegistros", resultado.getTotalElements()
+            ));
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "erro", "Erro ao processar consulta: " + e.getMessage(),
+                    "status", "erro"
+            ));
+        }
+    }
+
     /**
      * GET /api/estatisticas/status - status do sistema
      */
@@ -134,4 +230,6 @@ public class EstatisticasController {
         
         return ResponseEntity.ok(status);
     }
+
+
 }

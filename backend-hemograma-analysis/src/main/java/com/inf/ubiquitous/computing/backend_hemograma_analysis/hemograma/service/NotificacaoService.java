@@ -37,7 +37,6 @@ public class NotificacaoService {
                 paciente.getSexo(),
                 motivoRisco
             );
-            
             // Usa região como key para particionar messages por região
             CompletableFuture<SendResult<String, Object>> future = 
                 kafkaTemplate.send(TOPIC_HIV_DETECTADO, paciente.getRegiao(), notificacao);

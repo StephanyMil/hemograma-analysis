@@ -6,6 +6,8 @@ import com.inf.ubiquitous.computing.backend_hemograma_analysis.hemograma.dto.Pac
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,7 +99,24 @@ public class ContadorHivService {
             logger.error("Erro ao incrementar contador HIV: {}", e.getMessage(), e);
         }
     }
-    
+
+    /**
+     * Busca contadores com filtros e paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<ContadorHiv> buscarContadoresFiltrados(
+            LocalDate dataInicio, LocalDate dataFim, String regiao, String estado,
+            String faixaEtaria, String sexo, Pageable pageable) {
+
+        logger.info("🔍 Buscando contadores - Filtros: dataInicio={}, dataFim={}, regiao={}, estado={}, faixaEtaria={}, sexo={}",
+                dataInicio, dataFim, regiao, estado, faixaEtaria, sexo);
+
+        return contadorRepository.buscarComFiltros(
+                dataInicio, dataFim, regiao, estado, faixaEtaria, sexo, pageable
+        );
+    }
+
+
     /**
      * Calcula total de casos por região para notificações
      */
