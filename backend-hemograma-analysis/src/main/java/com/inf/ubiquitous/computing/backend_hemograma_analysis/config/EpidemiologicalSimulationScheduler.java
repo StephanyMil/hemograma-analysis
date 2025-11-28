@@ -41,7 +41,7 @@ public class EpidemiologicalSimulationScheduler {
      * Cron: segundos minutos horas dia mês dia-da-semana
      * 0 0/30 * * * * = A cada 30 minutos
      */
-    @Scheduled(cron = "0 0/1 * * * *")
+    @Scheduled(cron = "0 0/30 * * * *")
     public void executarSimulacaoAgendada() {
         if (!simulationEnabled) {
             logger.info("⏸️  Simulação desabilitada via configuração");
